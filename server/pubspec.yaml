@@ -1,0 +1,18 @@
+name: opaque_server
+version: 0.1.0
+
+publish_to: none
+
+environment:
+  sdk: ^2.14.0
+
+dependencies:
+  opaque:
+    path: ../core
+
+  shelf: ^1.0.0
+  shelf_router: ^1.0.0
+
+dev_dependencies:
+  opaque_lints:
+    path: ../lints

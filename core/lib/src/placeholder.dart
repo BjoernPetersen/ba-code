@@ -1,0 +1,3 @@
+String placeholder() {
+  return 'placeholder';
+}

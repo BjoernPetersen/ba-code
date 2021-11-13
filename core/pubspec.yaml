@@ -1,0 +1,14 @@
+name: opaque
+version: 0.1.0
+
+publish_to: none
+
+environment:
+  sdk: ^2.14.0
+
+dependencies:
+  cryptography: ^2.0.0
+
+dev_dependencies:
+  opaque_lints:
+    path: ../lints
