@@ -54,6 +54,7 @@ jobs:
         working-directory: ./server
 
   push_docker:
+    name: Docker Build and Push
     runs-on: ubuntu-latest
     if: success() && github.ref == 'refs/heads/main'
     needs:
