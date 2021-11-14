@@ -10,5 +10,7 @@ dependencies:
   cryptography: ^2.0.0
 
 dev_dependencies:
+  build_runner: ^2.0.0
   opaque_lints:
     path: ../lints
+  test: ^1.0.0
