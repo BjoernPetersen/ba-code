@@ -7,15 +7,15 @@ jobs:
     runs-on: ubuntu-latest
     container: dart:2.14
     steps:
-      - name: Check out repo
+      - name: Check Out Repo
         uses: actions/checkout@v1
-      - name: Get dependencies
+      - name: Get Dependencies
         run: pub get
         working-directory: ./core
-      - name: Run code generation
+      - name: Run Code Generation
         run: pub run build_runner build
         working-directory: ./core
-      - name: Run tests
+      - name: Run Tests
         run: dart test
         working-directory: ./core
 
@@ -24,12 +24,12 @@ jobs:
     runs-on: ubuntu-latest
     container: dart:2.14
     steps:
-      - name: Check out repo
+      - name: Check Out Repo
         uses: actions/checkout@v1
-      - name: Check lib formatting
+      - name: Check "lib" Formatting
         run: dart format lib --set-exit-if-changed
         working-directory: ./core
-      - name: Check test formatting
+      - name: Check "test" Formatting
         run: dart format test --set-exit-if-changed
         working-directory: ./core
 
@@ -38,12 +38,12 @@ jobs:
     runs-on: ubuntu-latest
     container: dart:2.14
     steps:
-      - name: Check out repo
+      - name: Check Out Repo
         uses: actions/checkout@v1
-      - name: Get dependencies
+      - name: Get Dependencies
         run: pub get
         working-directory: ./core
-      - name: Run code generation
+      - name: Run Code Generation
         run: pub run build_runner build
         working-directory: ./core
       - name: Run Analysis

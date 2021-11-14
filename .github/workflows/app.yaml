@@ -84,10 +84,10 @@ jobs:
         uses: subosito/flutter-action@v1
         with:
           channel: 'beta'
-      - name: Check lib formatting
+      - name: Check "lib" Formatting
         run: flutter format lib --set-exit-if-changed
         working-directory: ./app
-      - name: Check test formatting
+      - name: Check "test" Formatting
         run: flutter format test --set-exit-if-changed
         working-directory: ./app
 
