@@ -1,0 +1,74 @@
+name: Server
+on: [push]
+
+jobs:
+  check_format:
+    name: Check Format
+    runs-on: ubuntu-latest
+    container: dart:2.14
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v1
+      - name: Check bin formatting
+        run: dart format bin --set-exit-if-changed
+        working-directory: ./server
+      - name: Check lib formatting
+        run: dart format lib --set-exit-if-changed
+        working-directory: ./server
+      - name: Check test formatting
+        run: dart format test --set-exit-if-changed
+        working-directory: ./server
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    container: dart:2.14
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v1
+      - name: Get dependencies
+        run: pub get
+        working-directory: ./server
+      - name: Run code generation
+        run: pub run build_runner build
+        working-directory: ./server
+      - name: Run Analysis
+        run: dart analyze
+        working-directory: ./server
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    container: dart:2.14
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v1
+      - name: Get dependencies
+        run: pub get
+        working-directory: ./server
+      - name: Run code generation
+        run: pub run build_runner build
+        working-directory: ./server
+      - name: Run tests
+        run: dart test
+        working-directory: ./server
+
+  push_docker:
+    runs-on: ubuntu-latest
+    if: success() && github.ref == 'refs/heads/main'
+    needs:
+      - check_format
+      - lint
+      - test
+    steps:
+      - uses: actions/checkout@v1
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build the tagged Docker image
+        run: docker build -t ghcr.io/bjoernpetersen/opaque-server:${GITHUB_SHA} --build-arg "build=${GITHUB_SHA}" .
+      - name: Push the tagged Docker image
+        run: docker push ghcr.io/bjoernpetersen/opaque-server:${GITHUB_SHA}

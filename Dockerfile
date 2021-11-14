@@ -16,6 +16,9 @@ FROM scratch
 COPY --from=builder /runtime/ /
 COPY --from=builder /app/server/bin/main /app/bin/
 
+ARG build
+ENV BUILD=$build
+
 # Start server.
 EXPOSE 8080
 CMD ["/app/bin/main"]
