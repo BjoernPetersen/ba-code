@@ -8,7 +8,7 @@ jobs:
     container: dart:2.14
     steps:
       - name: Check Out Repo
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
       - name: Get Dependencies
         run: pub get
         working-directory: ./core
@@ -25,7 +25,7 @@ jobs:
     container: dart:2.14
     steps:
       - name: Check Out Repo
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
       - name: Check "lib" Formatting
         run: dart format lib --set-exit-if-changed
         working-directory: ./core
@@ -39,7 +39,7 @@ jobs:
     container: dart:2.14
     steps:
       - name: Check Out Repo
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
       - name: Get Dependencies
         run: pub get
         working-directory: ./core
