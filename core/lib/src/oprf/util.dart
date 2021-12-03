@@ -4,7 +4,6 @@ extension CryptoBytes on ByteData {
   bool constantTimeEquals(ByteData other) {
     // TODO: use constantTimeBytesEquality from cryptography
 
-
     // TODO: this only works for equally sized arrays
     bool isEqual = true;
     for (int i = 0; i < lengthInBytes; ++i) {
