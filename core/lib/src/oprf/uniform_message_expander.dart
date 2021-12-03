@@ -6,27 +6,27 @@ import 'package:opaque/src/oprf/data_conversion.dart';
 
 class UniformMessageExpander {
   final HashAlgorithm _hasher;
-  final Uint8List _domainSeparator;
+  final int _lengthInBytes;
 
   UniformMessageExpander._(
     this._hasher,
-    this._domainSeparator,
+    this._lengthInBytes,
   );
 
-  factory UniformMessageExpander.sha256(
-    String domainSeparator,
-  ) =>
+  factory UniformMessageExpander.sha256({
+    int lengthInBytes = 48,
+  }) =>
       UniformMessageExpander._(
         Sha256(),
-        AsciiEncoder().convert(domainSeparator),
+        lengthInBytes,
       );
 
-  factory UniformMessageExpander.sha384(
-    String domainSeparator,
-  ) =>
+  factory UniformMessageExpander.sha384({
+    int lengthInBytes = 72,
+  }) =>
       UniformMessageExpander._(
         Sha384(),
-        AsciiEncoder().convert(domainSeparator),
+        lengthInBytes,
       );
 
   Future<List<int>> _hash(List<int> input) async {
@@ -36,21 +36,22 @@ class UniformMessageExpander {
 
   /// Implementation of
   /// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-12#section-5.4.1
-  Future<List<int>> expand(String message, int lengthInBytes) async {
-    final ell = (lengthInBytes / _hasher.hashLengthInBytes).ceil();
+  Future<List<int>> expand(ByteData message, String domainSeparator) async {
+    final domainSeparatorBytes = AsciiEncoder().convert(domainSeparator);
+    final ell = (_lengthInBytes / _hasher.hashLengthInBytes).ceil();
     if (ell > 255) {
-      throw ArgumentError.value(lengthInBytes, 'lengthInBytes');
+      throw ArgumentError.value(_lengthInBytes, 'lengthInBytes');
     }
 
     final domainSeparatorLengthBytes = intToBytes(
-      BigInt.from(_domainSeparator.length),
+      BigInt.from(domainSeparatorBytes.length),
       1,
     );
-    final dstPrime = _domainSeparator + domainSeparatorLengthBytes;
+    final dstPrime = domainSeparatorBytes + domainSeparatorLengthBytes;
     final zPad = intToBytes(BigInt.zero, _hasher.blockLengthInBytes);
-    final lengthBytes = intToBytes(BigInt.from(lengthInBytes), 2);
+    final lengthBytes = intToBytes(BigInt.from(_lengthInBytes), 2);
 
-    final messageBytes = Utf8Encoder().convert(message);
+    final messageBytes = message.buffer.asUint8List();
     final List<int> msgPrime = [
       ...zPad,
       ...messageBytes,
@@ -72,7 +73,7 @@ class UniformMessageExpander {
     }
 
     final List<int> result = [for (final bytes in uniformBytes) ...bytes];
-    return Uint8List.fromList(result).sublist(0, lengthInBytes);
+    return Uint8List.fromList(result).sublist(0, _lengthInBytes);
   }
 }
 

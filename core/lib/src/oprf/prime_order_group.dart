@@ -1,8 +1,7 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:cryptography/cryptography.dart';
 import 'package:opaque/src/oprf/data_conversion.dart';
+import 'package:opaque/src/oprf/uniform_message_expander.dart';
 import 'package:pointycastle/api.dart' show SecureRandom;
 import 'package:pointycastle/ecc/api.dart';
 import 'package:pointycastle/ecc/curves/secp384r1.dart';
@@ -31,12 +30,20 @@ abstract class PrimeOrderGroup<Element, Scalar> {
 
 class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   final ECDomainParameters _params;
+  final UniformMessageExpander _messageExpander;
 
   final fp.ECCurve _curve;
 
-  PrimeOrderGroupImpl._(this._params) : _curve = _params.curve as fp.ECCurve;
+  PrimeOrderGroupImpl._(
+    this._params,
+    this._messageExpander,
+  ) : _curve = _params.curve as fp.ECCurve;
 
-  PrimeOrderGroupImpl() : this._(ECCurve_secp384r1());
+  PrimeOrderGroupImpl()
+      : this._(
+          ECCurve_secp384r1(),
+          UniformMessageExpander.sha384(),
+        );
 
   @override
   BigInt get order => _params.n;
@@ -48,21 +55,9 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     ByteData data,
     String domainSeparator,
   ) async {
-    final expanded = await expandMessage(data, domainSeparator);
-    final field = bytesToInt(expanded.buffer.asUint8List()).remainder(order);
+    final expanded = await _messageExpander.expand(data, domainSeparator);
+    final field = bytesToInt(expanded).remainder(order);
     return _curve.fromBigInteger(field);
-  }
-
-  // TODO: make private
-  Future<ByteData> expandMessage(ByteData data, String domainSeparator) async {
-    final hashSink = Sha384().newHashSink();
-    // TODO: this might not be entirely correct, should use L = 72
-    hashSink.add(AsciiEncoder().convert(domainSeparator));
-    hashSink.add(data.buffer.asUint8List());
-    hashSink.close();
-    final hash = await hashSink.hash();
-    final bytes = hash.bytes as Uint8List;
-    return bytes.buffer.asByteData();
   }
 
   Future<ECPoint> _hashToCurve(ByteData data, String domainSeparator) async {

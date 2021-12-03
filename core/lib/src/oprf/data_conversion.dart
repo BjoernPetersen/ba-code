@@ -23,7 +23,7 @@ Uint8List intToBytes(BigInt number, int length) {
 }
 
 /// https://datatracker.ietf.org/doc/html/rfc8017#section-4.2
-BigInt bytesToInt(Uint8List bytes) {
+BigInt bytesToInt(List<int> bytes) {
   BigInt sum = BigInt.from(bytes.last);
   final factor = BigInt.from(256);
   for (int i = 1; i < bytes.length; i += 1) {

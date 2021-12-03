@@ -1,3 +1,0 @@
-String placeholder() {
-  return 'placeholder';
-}

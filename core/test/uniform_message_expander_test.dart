@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:convert/convert.dart';
 import 'package:opaque/src/oprf/uniform_message_expander.dart';
 import 'package:test/expect.dart';
@@ -69,8 +71,13 @@ expandMessageTest({
   int lengthInBytes = 0x20,
 }) {
   test('$msg-$dst', () async {
-    final expander = UniformMessageExpander.sha256(dst);
-    final expanded = await expander.expand(msg, lengthInBytes);
+    final expander = UniformMessageExpander.sha256(
+      lengthInBytes: lengthInBytes,
+    );
+    final expanded = await expander.expand(
+      AsciiEncoder().convert(msg).buffer.asByteData(),
+      dst,
+    );
     final encoded = hex.encode(expanded);
     expect(encoded, uniformBytes);
   });
