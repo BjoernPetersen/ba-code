@@ -76,7 +76,6 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   ) async {
     final l = 72;
     final count = 2;
-    final lengthInBytes = l * count;
     final expanded = await _messageExpander.expand(data, domainSeparator);
     final result = <BigInt>[];
     for (int i = 0; i < count; i += 1) {
