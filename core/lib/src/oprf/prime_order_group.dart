@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:cryptography/cryptography.dart';
+import 'package:opaque/src/oprf/data_conversion.dart';
 import 'package:pointycastle/api.dart' show SecureRandom;
 import 'package:pointycastle/ecc/api.dart';
 import 'package:pointycastle/ecc/curves/secp384r1.dart';
@@ -48,7 +49,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     String domainSeparator,
   ) async {
     final expanded = await expandMessage(data, domainSeparator);
-    final field = _os2ip(expanded).remainder(order);
+    final field = bytesToInt(expanded.buffer.asUint8List()).remainder(order);
     return _curve.fromBigInteger(field);
   }
 
@@ -62,17 +63,6 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     final hash = await hashSink.hash();
     final bytes = hash.bytes as Uint8List;
     return bytes.buffer.asByteData();
-  }
-
-  /// As defined in https://datatracker.ietf.org/doc/html/rfc8017#section-4.2
-  BigInt _os2ip(ByteData data) {
-    // TODO should be a separate primitive
-    BigInt sum = BigInt.from(data.getUint8(0));
-    final factor = BigInt.from(256);
-    for (int i = 1; i < data.lengthInBytes; ++i) {
-      sum += BigInt.from(data.getUint8(i)) * factor.pow(i);
-    }
-    return sum;
   }
 
   Future<ECPoint> _hashToCurve(ByteData data, String domainSeparator) async {
@@ -182,6 +172,7 @@ extension on ECFieldElement {
   }
 
   int get sign {
+    // TODO: check whether this is right
     return toBigInteger()!.sign;
   }
 
