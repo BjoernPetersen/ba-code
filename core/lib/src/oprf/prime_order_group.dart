@@ -51,13 +51,40 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   @override
   ECPoint get identity => _curve.infinity!;
 
+  Future<List<BigInt>> hashToField(
+    ByteData data,
+    String domainSeparator,
+  ) async {
+    final l = 72;
+    final count = 2;
+    final lengthInBytes = l * count;
+    final expander =
+        UniformMessageExpander.sha384(lengthInBytes: lengthInBytes);
+    final expanded = await expander.expand(data, domainSeparator);
+    final result = <BigInt>[];
+    for (int i = 0; i < count; i += 1) {
+      final offset = l * i;
+      final tv = expanded.sublist(offset, offset + l);
+      result.add(bytesToInt(tv).remainder(_curve.q!));
+    }
+    return result;
+  }
+
   Future<ECFieldElement> _hashToField(
     ByteData data,
     String domainSeparator,
   ) async {
+    final l = 72;
+    final count = 2;
+    final lengthInBytes = l * count;
     final expanded = await _messageExpander.expand(data, domainSeparator);
-    final field = bytesToInt(expanded).remainder(order);
-    return _curve.fromBigInteger(field);
+    final result = <BigInt>[];
+    for (int i = 0; i < count; i += 1) {
+      final offset = l * i;
+      final tv = expanded.sublist(offset, offset + l);
+      result.add(bytesToInt(tv).remainder(order));
+    }
+    return _curve.fromBigInteger(result[0]);
   }
 
   Future<ECPoint> _hashToCurve(ByteData data, String domainSeparator) async {
