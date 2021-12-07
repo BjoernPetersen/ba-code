@@ -45,6 +45,8 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   @override
   BigInt get order => _params.n;
 
+  BigInt get q=>_curve.q!;
+
   @override
   ECPoint get identity => _curve.infinity!;
 
@@ -75,9 +77,19 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   ) async {
     final fields = await hashToField(data, domainSeparator, count: 2);
     final points = fields.map(_mapToCurveSimpleSwu).toList(growable: false);
+    // q1.y is wrong for empty message and abcdef0-9
+
     final sum = points.reduce((a, b) => (a + b)!);
     // TODO: clear_cofactor
     return sum;
+  }
+
+  BigInt inv(BigInt x) {
+    if (x == BigInt.zero) {
+      return x;
+    }
+
+    return x.modPow(q - BigInt.two, q);
   }
 
   ECPoint _mapToCurveSimpleSwu(ECFieldElement field) {
@@ -91,7 +103,9 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
 
     final ECFieldElement one = _curve.fromBigInteger(BigInt.one);
 
-    final tv1 = (Z.square() * u.modPow(4, _curve)) + (Z * u.square());
+    // TODO: check which one is "more right"
+    //final tv1 =_curve.fromBigInteger(inv(((Z.square() * u.modPow(4, _curve)) + (Z * u.square())).toBigInteger()!));
+    final tv1 =((Z.square() * u.modPow(4, _curve)) + (Z * u.square())).invert();
     final ECFieldElement x1;
     if (tv1.isZero) {
       x1 = B / (Z * A);
@@ -102,18 +116,19 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     final ECFieldElement x;
     final ECFieldElement y;
     final gx1 = x1.modPow(3, _curve) + (A * x1) + B;
-    final gx1sqrt = gx1.sqrt();
+    final gx1sqrt = gx1.positive.sqrt();
     if (gx1sqrt != null) {
       x = x1;
       y = gx1sqrt;
     } else {
       x = Z * u.square() * x1;
       final gx2 = x.modPow(3, _curve) + (A * x) + B;
-      y = gx2.sqrt()!;
+      y = gx2.positive.sqrt()!;
     }
 
     final xInt = x.toBigInteger()!;
     final yInt = y.toBigInteger()!;
+    // TODO: sign?
     if (u.sign != y.sign) {
       return _curve.createPoint(xInt, -yInt);
     } else {
@@ -185,6 +200,14 @@ extension on ECFieldElement {
     return curve.fromBigInteger(
       x.modPow(BigInt.from(exponent), curve.q!),
     );
+  }
+
+  ECFieldElement get positive {
+    if (sign == -1) {
+      return -this;
+    } else {
+      return this;
+    }
   }
 
   int get sign {
