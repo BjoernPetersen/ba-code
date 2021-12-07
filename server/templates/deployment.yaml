@@ -9,6 +9,9 @@ spec:
     matchLabels:
       app: opaque
   template:
+    metadata:
+      labels:
+        app: opaque
     spec:
       imagePullSecrets:
         - name: github
