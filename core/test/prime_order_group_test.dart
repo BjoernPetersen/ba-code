@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:opaque/src/oprf/prime_order_group.dart';
 import 'package:test/test.dart';
@@ -9,14 +10,30 @@ void main() {
 
   group('hash_to_field', () {
     for (final vector in vectors) {
-      final messageBytes =
-          AsciiEncoder().convert(vector.msg).buffer.asByteData();
+      final messageBytes = encode(vector.msg);
       test('Message "${vector.msg}"', () async {
         final result = await primeOrderGroup.hashToField(messageBytes, dst);
-        expect(result, vector.u);
+        final resultInts =
+            result.map((e) => e.toBigInteger()!).toList(growable: false);
+        expect(resultInts, vector.u);
       });
     }
   });
+
+  group('hash_to_group', () {
+    for (final vector in vectors) {
+      final messageBytes = encode(vector.msg);
+      test('Message "${vector.msg}"', () async {
+        final result = await primeOrderGroup.hashToCurve(messageBytes, dst);
+        expect(result.x?.toBigInteger(), vector.p.x);
+        expect(result.y?.toBigInteger(), vector.p.y);
+      });
+    }
+  });
+}
+
+ByteData encode(String message) {
+  return AsciiEncoder().convert(message).buffer.asByteData();
 }
 
 class Vector {

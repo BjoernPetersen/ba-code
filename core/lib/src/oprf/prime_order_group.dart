@@ -30,19 +30,16 @@ abstract class PrimeOrderGroup<Element, Scalar> {
 
 class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   final ECDomainParameters _params;
-  final UniformMessageExpander _messageExpander;
 
   final fp.ECCurve _curve;
 
   PrimeOrderGroupImpl._(
     this._params,
-    this._messageExpander,
   ) : _curve = _params.curve as fp.ECCurve;
 
   PrimeOrderGroupImpl()
       : this._(
           ECCurve_secp384r1(),
-          UniformMessageExpander.sha384(),
         );
 
   @override
@@ -51,51 +48,44 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   @override
   ECPoint get identity => _curve.infinity!;
 
-  Future<List<BigInt>> hashToField(
+  Future<List<ECFieldElement>> hashToField(
     ByteData data,
-    String domainSeparator,
-  ) async {
+    String domainSeparator, {
+    int count = 2,
+  }) async {
     final l = 72;
-    final count = 2;
     final lengthInBytes = l * count;
-    final expander =
-        UniformMessageExpander.sha384(lengthInBytes: lengthInBytes);
+    final expander = UniformMessageExpander.sha384(
+      lengthInBytes: lengthInBytes,
+    );
     final expanded = await expander.expand(data, domainSeparator);
-    final result = <BigInt>[];
+    final result = <ECFieldElement>[];
     for (int i = 0; i < count; i += 1) {
       final offset = l * i;
       final tv = expanded.sublist(offset, offset + l);
-      result.add(bytesToInt(tv).remainder(_curve.q!));
+      final rawField = bytesToInt(tv).remainder(_curve.q!);
+      result.add(_curve.fromBigInteger(rawField));
     }
     return result;
   }
 
-  Future<ECFieldElement> _hashToField(
+  Future<ECPoint> hashToCurve(
     ByteData data,
     String domainSeparator,
   ) async {
-    final l = 72;
-    final count = 2;
-    final expanded = await _messageExpander.expand(data, domainSeparator);
-    final result = <BigInt>[];
-    for (int i = 0; i < count; i += 1) {
-      final offset = l * i;
-      final tv = expanded.sublist(offset, offset + l);
-      result.add(bytesToInt(tv).remainder(order));
-    }
-    return _curve.fromBigInteger(result[0]);
-  }
-
-  Future<ECPoint> _hashToCurve(ByteData data, String domainSeparator) async {
-    final field = await _hashToField(data, domainSeparator);
-    final curve = _mapToCurveSimpleSwu(field);
-    return curve;
+    final fields = await hashToField(data, domainSeparator, count: 2);
+    final points = fields.map(_mapToCurveSimpleSwu).toList(growable: false);
+    final sum = points.reduce((a, b) => (a + b)!);
+    // TODO: clear_cofactor
+    return sum;
   }
 
   ECPoint _mapToCurveSimpleSwu(ECFieldElement field) {
-    final ECFieldElement A = _curve.a!;
-    final ECFieldElement B = _curve.b!;
-    // TODO: choose proper Z
+    final ECFieldElement A = _curve.fromBigInteger(BigInt.from(-3));
+    final ECFieldElement B = _curve.fromBigInteger(BigInt.parse(
+      'b3312fa7e23ee7e4988e056be3f82d19181d9c6efe8141120314088f5013875ac656398d8a2ed19d2a85c8edd3ec2aef',
+      radix: 16,
+    ));
     final ECFieldElement Z = _curve.fromBigInteger(BigInt.from(-12));
     final ECFieldElement u = field;
 
@@ -132,18 +122,23 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   }
 
   @override
-  Future<ECPoint> hashToGroup(ByteData data, [String? domainSeparator]) {
+  Future<ECPoint> hashToGroup(
+    ByteData data, [
+    String? domainSeparator,
+  ]) {
     final prefix = 'HashToGroup-';
     final dst = domainSeparator == null ? prefix : '$prefix$domainSeparator';
-    return _hashToCurve(data, dst);
+    return hashToCurve(data, dst);
   }
 
   @override
-  Future<ECFieldElement> hashToScalar(ByteData data,
-      [String? domainSeparator]) {
+  Future<ECFieldElement> hashToScalar(
+    ByteData data, [
+    String? domainSeparator,
+  ]) async {
     final prefix = 'HashToScalar-';
     final dst = domainSeparator == null ? prefix : '$prefix$domainSeparator';
-    return _hashToField(data, dst);
+    return (await hashToField(data, dst)).single;
   }
 
   @override
