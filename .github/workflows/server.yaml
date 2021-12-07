@@ -10,6 +10,7 @@ jobs:
   check_format:
     name: Check Format
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     container: dart:2.14
     steps:
       - name: Check Out Repo
@@ -27,6 +28,7 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     container: dart:2.14
     steps:
       - name: Check out repo
@@ -44,6 +46,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     container: dart:2.14
     steps:
       - name: Check Out Repo
