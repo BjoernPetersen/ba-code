@@ -20,16 +20,20 @@ void main() {
     }
   });
 
-  group('hash_to_group', () {
-    for (final vector in vectors) {
-      final messageBytes = encode(vector.msg);
-      test('Message "${vector.msg}"', () async {
-        final result = await primeOrderGroup.hashToCurve(messageBytes, dst);
-        expect(result.x?.toBigInteger(), vector.p.x);
-        expect(result.y?.toBigInteger(), vector.p.y);
-      });
-    }
-  });
+  group(
+    'hash_to_group',
+    () {
+      for (final vector in vectors) {
+        final messageBytes = encode(vector.msg);
+        test('Message "${vector.msg}"', () async {
+          final result = await primeOrderGroup.hashToCurve(messageBytes, dst);
+          expect(result.x?.toBigInteger(), vector.p.x);
+          expect(result.y?.toBigInteger(), vector.p.y);
+        });
+      }
+    },
+    skip: true,
+  );
 }
 
 ByteData encode(String message) {
