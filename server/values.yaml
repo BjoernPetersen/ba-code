@@ -1,0 +1,1 @@
+image: ghcr.io/bjoernpetersen/opaque-server:${GITHUB_SHA}

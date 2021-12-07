@@ -74,3 +74,16 @@ jobs:
         run: docker build -t ghcr.io/bjoernpetersen/opaque-server:${GITHUB_SHA} --build-arg "build=${GITHUB_SHA}" -f server/Dockerfile .
       - name: Push the Tagged Docker Image
         run: docker push ghcr.io/bjoernpetersen/opaque-server:${GITHUB_SHA}
+
+  deploy:
+    name: Deploy to Kubernetes Cluster
+    runs-on: ubuntu-latest
+    if: success() && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Substitute environment variables in values.yaml
+        run: "envsubst < values.yaml > values_sub.yaml && mv values_sub.yaml values.yaml"
+      - uses: WyriHaximus/github-action-helm3@v2
+        with:
+          exec: helm upgrade opaque . --install --namespace=opaque
+          kubeconfig: '${{ secrets.KUBECONFIG_RAW }}'

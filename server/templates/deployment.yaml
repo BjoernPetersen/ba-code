@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opaque
+  labels:
+    app: opaque
+spec:
+  selector:
+    matchLabels:
+      app: opaque
+  template:
+    spec:
+      imagePullSecrets:
+        - name: github
+      containers:
+        - name: api
+          image: {{ .Values.image }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /
