@@ -1,5 +1,10 @@
 name: App
-on: [push]
+on:
+  workflow_run:
+    workflows:
+      - Core
+    types:
+      - completed
 
 jobs:
   generate:

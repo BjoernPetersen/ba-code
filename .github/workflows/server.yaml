@@ -1,5 +1,10 @@
 name: Server
-on: [push]
+on:
+  workflow_run:
+    workflows:
+      - Core
+    types:
+      - completed
 
 jobs:
   check_format:
