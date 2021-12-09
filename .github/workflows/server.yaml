@@ -11,7 +11,7 @@ jobs:
     name: Check Format
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    container: dart:2.14
+    container: dart:2.15
     steps:
       - name: Check Out Repo
         uses: actions/checkout@v2
@@ -29,7 +29,7 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    container: dart:2.14
+    container: dart:2.15
     steps:
       - name: Check out repo
         uses: actions/checkout@v2
@@ -47,7 +47,7 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    container: dart:2.14
+    container: dart:2.15
     steps:
       - name: Check Out Repo
         uses: actions/checkout@v2

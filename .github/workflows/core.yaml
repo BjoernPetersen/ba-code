@@ -5,7 +5,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    container: dart:2.14
+    container: dart:2.15
     steps:
       - name: Check Out Repo
         uses: actions/checkout@v2
@@ -22,7 +22,7 @@ jobs:
   check_format:
     name: Check Format
     runs-on: ubuntu-latest
-    container: dart:2.14
+    container: dart:2.15
     steps:
       - name: Check Out Repo
         uses: actions/checkout@v2
@@ -36,7 +36,7 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    container: dart:2.14
+    container: dart:2.15
     steps:
       - name: Check Out Repo
         uses: actions/checkout@v2
