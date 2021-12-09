@@ -45,7 +45,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   @override
   BigInt get order => _params.n;
 
-  BigInt get q=>_curve.q!;
+  BigInt get q => _curve.q!;
 
   @override
   ECPoint get identity => _curve.infinity!;
@@ -105,7 +105,8 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
 
     // TODO: check which one is "more right"
     //final tv1 =_curve.fromBigInteger(inv(((Z.square() * u.modPow(4, _curve)) + (Z * u.square())).toBigInteger()!));
-    final tv1 =((Z.square() * u.modPow(4, _curve)) + (Z * u.square())).invert();
+    final tv1 =
+        ((Z.square() * u.modPow(4, _curve)) + (Z * u.square())).invert();
     final ECFieldElement x1;
     if (tv1.isZero) {
       x1 = B / (Z * A);
