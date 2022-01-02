@@ -36,7 +36,7 @@ class UniformMessageExpander {
 
   /// Implementation of
   /// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-12#section-5.4.1
-  Future<List<int>> expand(ByteData message, String domainSeparator) async {
+  Future<List<int>> expand(ByteBuffer message, String domainSeparator) async {
     final domainSeparatorBytes = AsciiEncoder().convert(domainSeparator);
     final ell = (_lengthInBytes / _hasher.hashLengthInBytes).ceil();
     if (ell > 255) {
@@ -51,7 +51,7 @@ class UniformMessageExpander {
     final zPad = intToBytes(BigInt.zero, _hasher.blockLengthInBytes);
     final lengthBytes = intToBytes(BigInt.from(_lengthInBytes), 2);
 
-    final messageBytes = message.buffer.asUint8List();
+    final messageBytes = message.asUint8List();
     final List<int> msgPrime = [
       ...zPad,
       ...messageBytes,

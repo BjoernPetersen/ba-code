@@ -35,8 +35,8 @@ void main() {
   );
 }
 
-ByteData encode(String message) {
-  return AsciiEncoder().convert(message).buffer.asByteData();
+ByteBuffer encode(String message) {
+  return AsciiEncoder().convert(message).buffer;
 }
 
 class Vector {

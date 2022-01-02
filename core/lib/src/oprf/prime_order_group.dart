@@ -13,19 +13,19 @@ abstract class PrimeOrderGroup<Element, Scalar> {
 
   Element get identity;
 
-  Future<Element> hashToGroup(ByteData data);
+  Future<Element> hashToGroup(ByteBuffer data);
 
-  Future<Scalar> hashToScalar(ByteData data);
+  Future<Scalar> hashToScalar(ByteBuffer data);
 
   Scalar randomScalar();
 
-  ByteData serializeElement(Element element);
+  ByteBuffer serializeElement(Element element);
 
-  Element deserializeElement(ByteData data);
+  Element deserializeElement(ByteBuffer data);
 
-  ByteData serializeScalar(Scalar scalar);
+  ByteBuffer serializeScalar(Scalar scalar);
 
-  Scalar deserializeScalar(ByteData data);
+  Scalar deserializeScalar(ByteBuffer data);
 }
 
 class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
@@ -51,7 +51,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   ECPoint get identity => _curve.infinity!;
 
   Future<List<ECFieldElement>> hashToField(
-    ByteData data,
+    ByteBuffer data,
     String domainSeparator, {
     int count = 2,
   }) async {
@@ -72,7 +72,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   }
 
   Future<ECPoint> hashToCurve(
-    ByteData data,
+    ByteBuffer data,
     String domainSeparator,
   ) async {
     final fields = await hashToField(data, domainSeparator, count: 2);
@@ -141,7 +141,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
 
   @override
   Future<ECPoint> hashToGroup(
-    ByteData data, [
+    ByteBuffer data, [
     String? domainSeparator,
   ]) {
     final prefix = 'HashToGroup-';
@@ -151,7 +151,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
 
   @override
   Future<ECFieldElement> hashToScalar(
-    ByteData data, [
+    ByteBuffer data, [
     String? domainSeparator,
   ]) async {
     final prefix = 'HashToScalar-';
@@ -173,25 +173,25 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   }
 
   @override
-  ByteData serializeElement(ECPoint element) {
+  ByteBuffer serializeElement(ECPoint element) {
     // TODO: implement serializeElement
     throw UnimplementedError();
   }
 
   @override
-  ECPoint deserializeElement(ByteData data) {
+  ECPoint deserializeElement(ByteBuffer data) {
     // TODO: implement deserializeElement
     throw UnimplementedError();
   }
 
   @override
-  ByteData serializeScalar(ECFieldElement scalar) {
+  ByteBuffer serializeScalar(ECFieldElement scalar) {
     // TODO: implement serializeScalar
     throw UnimplementedError();
   }
 
   @override
-  ECFieldElement deserializeScalar(ByteData data) {
+  ECFieldElement deserializeScalar(ByteBuffer data) {
     // TODO: implement deserializeScalar
     throw UnimplementedError();
   }

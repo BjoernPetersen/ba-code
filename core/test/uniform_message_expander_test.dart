@@ -75,7 +75,7 @@ expandMessageTest({
       lengthInBytes: lengthInBytes,
     );
     final expanded = await expander.expand(
-      AsciiEncoder().convert(msg).buffer.asByteData(),
+      AsciiEncoder().convert(msg).buffer,
       dst,
     );
     final encoded = hex.encode(expanded);
