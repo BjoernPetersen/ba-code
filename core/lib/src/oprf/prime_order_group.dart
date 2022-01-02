@@ -92,7 +92,9 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     return x.modPow(q - BigInt.two, q);
   }
 
+  /// https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-6.6.2
   ECPoint _mapToCurveSimpleSwu(ECFieldElement field) {
+    // Values chosen as per https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-8.3
     final ECFieldElement A = _curve.fromBigInteger(BigInt.from(-3));
     final ECFieldElement B = _curve.fromBigInteger(BigInt.parse(
       'b3312fa7e23ee7e4988e056be3f82d19181d9c6efe8141120314088f5013875ac656398d8a2ed19d2a85c8edd3ec2aef',
@@ -130,10 +132,10 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     final xInt = x.toBigInteger()!;
     final yInt = y.toBigInteger()!;
     // TODO: sign?
-    if (u.sign != y.sign) {
-      return _curve.createPoint(xInt, -yInt);
-    } else {
+    if (u.sign == y.sign) {
       return _curve.createPoint(xInt, yInt);
+    } else {
+      return _curve.createPoint(xInt, -yInt);
     }
   }
 
