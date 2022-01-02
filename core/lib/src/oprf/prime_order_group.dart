@@ -174,26 +174,23 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
 
   @override
   ByteBuffer serializeElement(ECPoint element) {
-    // TODO: implement serializeElement
-    throw UnimplementedError();
+    return element.getEncoded().buffer;
   }
 
   @override
   ECPoint deserializeElement(ByteBuffer data) {
-    // TODO: implement deserializeElement
-    throw UnimplementedError();
+    return _curve.decodePoint(data.asUint8List()) as ECPoint;
   }
 
   @override
   ByteBuffer serializeScalar(ECFieldElement scalar) {
-    // TODO: implement serializeScalar
-    throw UnimplementedError();
+    return intToBytes(scalar.toBigInteger()!.remainder(order), 48).buffer;
   }
 
   @override
   ECFieldElement deserializeScalar(ByteBuffer data) {
-    // TODO: implement deserializeScalar
-    throw UnimplementedError();
+    final raw = bytesToInt(data.asUint8List());
+    return _curve.fromBigInteger(raw);
   }
 }
 
