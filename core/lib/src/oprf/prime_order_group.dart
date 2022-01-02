@@ -78,7 +78,6 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     final fields = await hashToField(data, domainSeparator, count: 2);
     final points = fields.map(_mapToCurveSimpleSwu).toList(growable: false);
     // q1.y is wrong for empty message and abcdef0-9
-
     final sum = points.reduce((a, b) => (a + b)!);
     // TODO: clear_cofactor
     return sum;
@@ -119,6 +118,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     final ECFieldElement x;
     final ECFieldElement y;
     final gx1 = x1.modPow(3, _curve) + (A * x1) + B;
+    // TODO: check isSquare instead?
     final gx1sqrt = gx1.positive.sqrt();
     if (gx1sqrt != null) {
       x = x1;
@@ -213,9 +213,10 @@ extension on ECFieldElement {
     }
   }
 
+  /// https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-4.1
   int get sign {
-    // TODO: check whether this is right
-    return toBigInteger()!.sign;
+    // m is 1, so we can simplify the loop
+    return toBigInteger()!.remainder(BigInt.two).toInt();
   }
 
   bool get isZero => toBigInteger() == BigInt.zero;
