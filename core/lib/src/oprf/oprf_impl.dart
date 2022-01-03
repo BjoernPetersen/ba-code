@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:cryptography/cryptography.dart' as crypto;
 import 'package:opaque/src/oprf/data_conversion.dart';
 import 'package:opaque/src/oprf/prime_order_group.dart';
@@ -10,22 +8,22 @@ import 'oprf.dart';
 
 class OprfImpl extends Oprf {
   final PrimeOrderGroup group;
-  final ByteBuffer contextString;
+  final Bytes contextString;
 
   OprfImpl(this.group) : contextString = _initContextString();
 
-  static ByteBuffer _initContextString() {
+  static Bytes _initContextString() {
     return concatBytes([
       'VOPRF08-'.asciiBytes(),
       // Mode 0 is "base mode", which we are implementing
       intToBytes(BigInt.zero, 1),
       // Only valid for p384, sha-384
       intToBytes(BigInt.from(4), 2),
-    ]).buffer;
+    ]);
   }
 
   @override
-  Future<BlindPair> blind(ByteBuffer input, {ByteBuffer? blind}) async {
+  Future<BlindPair> blind(Bytes input, {Bytes? blind}) async {
     final ECFieldElement effectiveBlind;
     if (blind == null) {
       effectiveBlind = group.randomScalar();
@@ -42,9 +40,9 @@ class OprfImpl extends Oprf {
     );
   }
 
-  Future<ByteBuffer> unblind({
-    required ByteBuffer blind,
-    required ByteBuffer blindedElement,
+  Future<Bytes> unblind({
+    required Bytes blind,
+    required Bytes blindedElement,
   }) async {
     final z = group.deserializeElement(blindedElement);
     final n = z * group.deserializeScalar(blind).invert().toBigInteger();
@@ -52,7 +50,7 @@ class OprfImpl extends Oprf {
   }
 
   @override
-  Future<KeyPair> deriveKeyPair(ByteBuffer seed) async {
+  Future<KeyPair> deriveKeyPair(Bytes seed) async {
     final secret = await group.hashToScalar(
       seed,
       domainSeparator: contextString,
@@ -66,18 +64,18 @@ class OprfImpl extends Oprf {
 
   /// https://www.ietf.org/archive/id/draft-irtf-cfrg-voprf-08.html#section-3.3.1.1
   @override
-  Future<ByteBuffer> evaluate({
-    required ByteBuffer privateKey,
-    required ByteBuffer input,
+  Future<Bytes> evaluate({
+    required Bytes privateKey,
+    required Bytes input,
     // TODO "currently set to nil" in OPAQUE
     required PublicInput info,
   }) async {
     final context = concatBytes([
       'Context-'.asciiBytes(),
-      contextString.asUint8List(),
+      contextString,
       smallIntToBytes(info.lengthInBytes, 2),
-      info.asUint8List(),
-    ]).buffer;
+      info,
+    ]);
 
     final m = await group.hashToScalar(context, domainSeparator: contextString);
     final privateKeyScalar = group.deserializeScalar(privateKey);
@@ -94,10 +92,10 @@ class OprfImpl extends Oprf {
 
   /// https://www.ietf.org/archive/id/draft-irtf-cfrg-voprf-08.html#section-3.3.3.2
   @override
-  Future<ByteBuffer> finalize({
-    required ByteBuffer input,
-    required ByteBuffer blind,
-    required ByteBuffer evaluatedElement,
+  Future<Bytes> finalize({
+    required Bytes input,
+    required Bytes blind,
+    required Bytes evaluatedElement,
     // TODO "currently set to nil" in OPAQUE
     required PublicInput info,
   }) async {
@@ -105,21 +103,21 @@ class OprfImpl extends Oprf {
       blind: blind,
       blindedElement: evaluatedElement,
     );
-    final dst = concatBuffers([
-      'Finalize-'.asciiBytes().buffer,
+    final dst = concatBytes([
+      'Finalize-'.asciiBytes(),
       contextString,
     ]);
     final hashInput = concatBytes([
       smallIntToBytes(input.lengthInBytes, 2),
-      input.asUint8List(),
+      input,
       smallIntToBytes(info.lengthInBytes, 2),
-      info.asUint8List(),
+      info,
       smallIntToBytes(unblindedElement.lengthInBytes, 2),
-      unblindedElement.asUint8List(),
+      unblindedElement,
       smallIntToBytes(dst.lengthInBytes, 2),
-      dst.asUint8List(),
+      dst,
     ]);
     final digest = await crypto.Sha384().hash(hashInput);
-    return Uint8List.fromList(digest.bytes).buffer;
+    return Bytes.fromList(digest.bytes);
   }
 }

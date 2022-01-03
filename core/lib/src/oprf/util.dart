@@ -1,31 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-extension CryptoByteData on ByteData {
-  @Deprecated('use constantTimeBytesEquality from cryptography')
-  bool constantTimeEquals(ByteData other) {
-    // TODO: this only works for equally sized arrays
-    bool isEqual = true;
-    for (int i = 0; i < lengthInBytes; ++i) {
-      final a = getInt8(i);
-      final b = other.getInt8(i);
-      if (a != b) {
-        isEqual = false;
-      }
-    }
-    return isEqual;
-  }
+typedef Bytes = Uint8List;
 
-  @Deprecated('Operate on ByteBuffer')
-  ByteData concat(ByteData other) {
-    final builder = BytesBuilder(copy: false);
-    builder.add(other.buffer.asUint8List());
-    final list = builder.toBytes();
-    return list.buffer.asByteData();
-  }
-}
-
-Uint8List concatBytes(List<Uint8List> byteLists) {
+Bytes concatBytes(List<Bytes> byteLists) {
   final builder = BytesBuilder(copy: false);
   for (final list in byteLists) {
     builder.add(list);
@@ -33,6 +11,7 @@ Uint8List concatBytes(List<Uint8List> byteLists) {
   return builder.toBytes();
 }
 
+@deprecated
 ByteBuffer concatBuffers(List<ByteBuffer> buffers) {
   final builder = BytesBuilder(copy: false);
   for (final buffer in buffers) {
@@ -44,7 +23,7 @@ ByteBuffer concatBuffers(List<ByteBuffer> buffers) {
 extension Ascii on String {
   static final _encoder = AsciiEncoder();
 
-  Uint8List asciiBytes() {
+  Bytes asciiBytes() {
     return _encoder.convert(this);
   }
 }

@@ -2,27 +2,28 @@ import 'dart:typed_data';
 
 import 'package:opaque/src/oprf/oprf_impl.dart';
 import 'package:opaque/src/oprf/prime_order_group.dart';
+import 'package:opaque/src/oprf/util.dart';
 
-typedef PublicInput = ByteBuffer;
+typedef PublicInput = Bytes;
 
 @Deprecated('May be unnecessary')
 class Proof {
-  final ByteBuffer c;
-  final ByteBuffer s;
+  final Bytes c;
+  final Bytes s;
 
   Proof({required this.c, required this.s});
 }
 
 class KeyPair {
-  final ByteBuffer private;
-  final ByteBuffer public;
+  final Bytes private;
+  final Bytes public;
 
   KeyPair({required this.private, required this.public});
 }
 
 class BlindPair {
-  final ByteBuffer blind;
-  final ByteBuffer blindedElement;
+  final Bytes blind;
+  final Bytes blindedElement;
 
   BlindPair({required this.blind, required this.blindedElement});
 }
@@ -33,22 +34,22 @@ abstract class Oprf {
 
   factory Oprf.withGroup(PrimeOrderGroup group) => OprfImpl(group);
 
-  Future<BlindPair> blind(ByteBuffer input);
+  Future<BlindPair> blind(Bytes input);
 
-  Future<ByteBuffer> evaluate({
-    required ByteBuffer privateKey,
-    required ByteBuffer input,
+  Future<Bytes> evaluate({
+    required Bytes privateKey,
+    required Bytes input,
     // TODO "currently set to nil" in OPAQUE
     required PublicInput info,
   });
 
-  Future<ByteBuffer> finalize({
-    required ByteBuffer input,
-    required ByteBuffer blind,
-    required ByteBuffer evaluatedElement,
+  Future<Bytes> finalize({
+    required Bytes input,
+    required Bytes blind,
+    required Bytes evaluatedElement,
     // TODO "currently set to nil" in OPAQUE
     required PublicInput info,
   });
 
-  Future<KeyPair> deriveKeyPair(ByteBuffer seed);
+  Future<KeyPair> deriveKeyPair(Bytes seed);
 }

@@ -1,7 +1,6 @@
-import 'dart:typed_data';
-
 import 'package:cryptography/cryptography.dart';
 import 'package:opaque/src/oprf/data_conversion.dart';
+import 'package:opaque/src/oprf/util.dart';
 
 class UniformMessageExpander {
   final HashAlgorithm _hasher;
@@ -36,24 +35,23 @@ class UniformMessageExpander {
   /// Implementation of
   /// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-12#section-5.4.1
   Future<List<int>> expand(
-    ByteBuffer message,
-    ByteBuffer domainSeparator,
+    Bytes message,
+    Bytes domainSeparator,
   ) async {
-    final domainSeparatorBytes = domainSeparator.asUint8List();
     final ell = (_lengthInBytes / _hasher.hashLengthInBytes).ceil();
     if (ell > 255) {
       throw ArgumentError.value(_lengthInBytes, 'lengthInBytes');
     }
 
     final domainSeparatorLengthBytes = intToBytes(
-      BigInt.from(domainSeparatorBytes.length),
+      BigInt.from(domainSeparator.length),
       1,
     );
-    final dstPrime = domainSeparatorBytes + domainSeparatorLengthBytes;
+    final dstPrime = domainSeparator + domainSeparatorLengthBytes;
     final zPad = intToBytes(BigInt.zero, _hasher.blockLengthInBytes);
     final lengthBytes = intToBytes(BigInt.from(_lengthInBytes), 2);
 
-    final messageBytes = message.asUint8List();
+    final messageBytes = message;
     final List<int> msgPrime = [
       ...zPad,
       ...messageBytes,
@@ -75,7 +73,7 @@ class UniformMessageExpander {
     }
 
     final List<int> result = [for (final bytes in uniformBytes) ...bytes];
-    return Uint8List.fromList(result).sublist(0, _lengthInBytes);
+    return Bytes.fromList(result).sublist(0, _lengthInBytes);
   }
 }
 

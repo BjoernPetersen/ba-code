@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:opaque/src/oprf/data_conversion.dart';
 import 'package:opaque/src/oprf/uniform_message_expander.dart';
@@ -20,21 +19,19 @@ abstract class PrimeOrderGroup<Element extends ECPoint,
 
   Element get identity;
 
-  Future<Element> hashToGroup(ByteBuffer data,
-      {required ByteBuffer domainSeparator});
+  Future<Element> hashToGroup(Bytes data, {required Bytes domainSeparator});
 
-  Future<Scalar> hashToScalar(ByteBuffer data,
-      {required ByteBuffer domainSeparator});
+  Future<Scalar> hashToScalar(Bytes data, {required Bytes domainSeparator});
 
   Scalar randomScalar();
 
-  ByteBuffer serializeElement(Element element);
+  Bytes serializeElement(Element element);
 
-  Element deserializeElement(ByteBuffer data);
+  Element deserializeElement(Bytes data);
 
-  ByteBuffer serializeScalar(Scalar scalar);
+  Bytes serializeScalar(Scalar scalar);
 
-  Scalar deserializeScalar(ByteBuffer data);
+  Scalar deserializeScalar(Bytes data);
 
   Element scalarBaseMult(Scalar scalar);
 }
@@ -62,8 +59,8 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   ECPoint get identity => _curve.infinity!;
 
   Future<List<ECFieldElement>> hashToField(
-    ByteBuffer data,
-    ByteBuffer domainSeparator, {
+    Bytes data,
+    Bytes domainSeparator, {
     int count = 2,
   }) async {
     final l = 72;
@@ -83,8 +80,8 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   }
 
   Future<ECPoint> hashToCurve(
-    ByteBuffer data,
-    ByteBuffer domainSeparator,
+    Bytes data,
+    Bytes domainSeparator,
   ) async {
     final fields = await hashToField(data, domainSeparator, count: 2);
     final points = fields.map(_mapToCurveSimpleSwu).toList(growable: false);
@@ -152,12 +149,12 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
 
   @override
   Future<ECPoint> hashToGroup(
-    ByteBuffer data, {
-    required ByteBuffer domainSeparator,
+    Bytes data, {
+    required Bytes domainSeparator,
   }) {
     final prefix = 'HashToGroup-';
-    final fullDomainSeparator = concatBuffers([
-      prefix.asciiBytes().buffer,
+    final fullDomainSeparator = concatBytes([
+      prefix.asciiBytes(),
       domainSeparator,
     ]);
     return hashToCurve(data, fullDomainSeparator);
@@ -165,12 +162,12 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
 
   @override
   Future<ECFieldElement> hashToScalar(
-    ByteBuffer data, {
-    required ByteBuffer domainSeparator,
+    Bytes data, {
+    required Bytes domainSeparator,
   }) async {
     final prefix = 'HashToScalar-';
-    final fullDomainSeparator = concatBuffers([
-      prefix.asciiBytes().buffer,
+    final fullDomainSeparator = concatBytes([
+      prefix.asciiBytes(),
       domainSeparator,
     ]);
     return (await hashToField(data, fullDomainSeparator, count: 1)).single;
@@ -184,7 +181,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     // We need to seed FortunaRandom ourselves...
     final nativeRandom = Random.secure();
     final seed = List.generate(32, (_) => nativeRandom.nextInt(256));
-    random.seed(KeyParameter(Uint8List.fromList(seed)));
+    random.seed(KeyParameter(Bytes.fromList(seed)));
 
     BigInt scalar = BigInt.zero;
 
@@ -197,23 +194,23 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   }
 
   @override
-  ByteBuffer serializeElement(ECPoint element) {
-    return element.getEncoded().buffer;
+  Bytes serializeElement(ECPoint element) {
+    return element.getEncoded();
   }
 
   @override
-  ECPoint deserializeElement(ByteBuffer data) {
-    return _curve.decodePoint(data.asUint8List()) as ECPoint;
+  ECPoint deserializeElement(Bytes data) {
+    return _curve.decodePoint(data) as ECPoint;
   }
 
   @override
-  ByteBuffer serializeScalar(ECFieldElement scalar) {
-    return intToBytes(scalar.toBigInteger()!.remainder(order), 48).buffer;
+  Bytes serializeScalar(ECFieldElement scalar) {
+    return intToBytes(scalar.toBigInteger()!.remainder(order), 48);
   }
 
   @override
-  ECFieldElement deserializeScalar(ByteBuffer data) {
-    final raw = bytesToInt(data.asUint8List());
+  ECFieldElement deserializeScalar(Bytes data) {
+    final raw = bytesToInt(data);
     return _curve.fromBigInteger(raw);
   }
 

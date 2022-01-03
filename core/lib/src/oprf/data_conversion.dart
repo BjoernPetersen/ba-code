@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:opaque/src/oprf/util.dart';
+
 const _smallBase = 256;
 final _base = BigInt.from(_smallBase);
 
@@ -25,7 +27,7 @@ Uint8List intToBytes(BigInt number, int length) {
 }
 
 /// https://datatracker.ietf.org/doc/html/rfc8017#section-4.1
-Uint8List smallIntToBytes(int number, int length) {
+Bytes smallIntToBytes(int number, int length) {
   if (number >= pow(_smallBase, length)) {
     throw ArgumentError.value(
       number,
@@ -35,7 +37,7 @@ Uint8List smallIntToBytes(int number, int length) {
   }
 
   var remaining = number;
-  final result = Uint8List(length);
+  final result = Bytes(length);
   for (int i = length - 1; remaining != 0 && i >= 0; i -= 1) {
     result[i] = (remaining % _smallBase).toInt();
     remaining = remaining ~/ _smallBase;

@@ -1,9 +1,8 @@
-import 'dart:typed_data';
-
 import 'package:convert/convert.dart';
 import 'package:opaque/core.dart';
 import 'package:opaque/src/oprf/oprf_impl.dart';
 import 'package:opaque/src/oprf/prime_order_group.dart';
+import 'package:opaque/src/oprf/util.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -19,7 +18,7 @@ void main() {
   group('deriveKey', () {
     test('test vector key', () async {
       final keyPair = await oprf.deriveKeyPair(seed);
-      expect(keyPair.private.asString(), skSm);
+      expect(keyPair.private, skSm);
     });
   });
 
@@ -31,10 +30,10 @@ void main() {
             vector.input,
             blind: vector.blind,
           );
-          expect(blinds.blind.asString(), vector.blind.asString());
+          expect(blinds.blind, vector.blind);
           expect(
-            blinds.blindedElement.asString(),
-            vector.blindedElement.asString(),
+            blinds.blindedElement,
+            vector.blindedElement,
           );
         });
       }
@@ -50,8 +49,8 @@ void main() {
           );
 
           expect(
-            evaluatedElement.asString(),
-            vector.evaluationElement.asString(),
+            evaluatedElement,
+            vector.evaluationElement,
           );
         });
       }
@@ -66,22 +65,23 @@ void main() {
             evaluatedElement: vector.evaluationElement,
             info: vector.info,
           );
-          expect(output.asString(), vector.output.asString());
+          expect(output, vector.output);
         });
       }
     });
   });
 }
 
-extension on ByteBuffer {
+extension on Bytes {
   String asString() {
-    return hex.encode(asUint8List());
+    return hex.encode(this);
   }
 }
 
-ByteBuffer decodeKey(PrimeOrderGroup primeGroup, String key) {
-  ByteBuffer bytes = hexDecode(key);
+Bytes decodeKey(PrimeOrderGroup primeGroup, String key) {
+  final bytes = hexDecode(key);
   return bytes;
+  // TODO: should be deserialized here?
   //return primeGroup.deserializeScalar(bytes);
 }
 
@@ -89,18 +89,18 @@ BigInt parseHexInt(String s) {
   return BigInt.parse(s, radix: 16);
 }
 
-ByteBuffer hexDecode(String s) {
-  return Uint8List.fromList(hex.decode(s)).buffer;
+Bytes hexDecode(String s) {
+  return Bytes.fromList(hex.decode(s));
 }
 
 class Vector {
   final String name;
-  final ByteBuffer input;
+  final Bytes input;
   final PublicInput info;
-  final ByteBuffer blind;
-  final ByteBuffer blindedElement;
-  final ByteBuffer evaluationElement;
-  final ByteBuffer output;
+  final Bytes blind;
+  final Bytes blindedElement;
+  final Bytes evaluationElement;
+  final Bytes output;
 
   Vector({
     required String input,
