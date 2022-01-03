@@ -1,21 +1,29 @@
+import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:opaque/src/oprf/data_conversion.dart';
 import 'package:opaque/src/oprf/uniform_message_expander.dart';
-import 'package:pointycastle/api.dart' show SecureRandom;
 import 'package:pointycastle/ecc/api.dart';
 import 'package:pointycastle/ecc/curves/secp384r1.dart';
 import 'package:pointycastle/ecc/ecc_fp.dart' as fp;
+import 'package:pointycastle/export.dart';
 
 /// Interface defined by Internet-Draft `draft-irtf-cfrg-voprf-08`.
-abstract class PrimeOrderGroup<Element, Scalar> {
+abstract class PrimeOrderGroup<Element extends ECPoint,
+    Scalar extends ECFieldElement> {
+  static PrimeOrderGroup<ECPoint, ECFieldElement> p384() =>
+      PrimeOrderGroupImpl();
+
   BigInt get order;
 
   Element get identity;
 
-  Future<Element> hashToGroup(ByteBuffer data);
+  Future<Element> hashToGroup(ByteBuffer data,
+      {required ByteBuffer domainSeparator});
 
-  Future<Scalar> hashToScalar(ByteBuffer data);
+  Future<Scalar> hashToScalar(ByteBuffer data,
+      {required ByteBuffer domainSeparator});
 
   Scalar randomScalar();
 
@@ -26,6 +34,8 @@ abstract class PrimeOrderGroup<Element, Scalar> {
   ByteBuffer serializeScalar(Scalar scalar);
 
   Scalar deserializeScalar(ByteBuffer data);
+
+  Element scalarBaseMult(Scalar scalar);
 }
 
 class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
@@ -52,7 +62,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
 
   Future<List<ECFieldElement>> hashToField(
     ByteBuffer data,
-    String domainSeparator, {
+    ByteBuffer domainSeparator, {
     int count = 2,
   }) async {
     final l = 72;
@@ -73,7 +83,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
 
   Future<ECPoint> hashToCurve(
     ByteBuffer data,
-    String domainSeparator,
+    ByteBuffer domainSeparator,
   ) async {
     final fields = await hashToField(data, domainSeparator, count: 2);
     final points = fields.map(_mapToCurveSimpleSwu).toList(growable: false);
@@ -141,27 +151,42 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
 
   @override
   Future<ECPoint> hashToGroup(
-    ByteBuffer data, [
-    String? domainSeparator,
-  ]) {
+    ByteBuffer data, {
+    required ByteBuffer domainSeparator,
+  }) {
     final prefix = 'HashToGroup-';
-    final dst = domainSeparator == null ? prefix : '$prefix$domainSeparator';
-    return hashToCurve(data, dst);
+    final dstBuilder = BytesBuilder(copy: false);
+    // TODO: precompute ascii bytes
+    dstBuilder.add(AsciiEncoder().convert(prefix));
+    dstBuilder.add(domainSeparator.asUint8List());
+    final fullDomainSeparator = dstBuilder.takeBytes().buffer;
+    return hashToCurve(data, fullDomainSeparator);
   }
 
   @override
   Future<ECFieldElement> hashToScalar(
-    ByteBuffer data, [
-    String? domainSeparator,
-  ]) async {
+    ByteBuffer data, {
+    required ByteBuffer domainSeparator,
+  }) async {
     final prefix = 'HashToScalar-';
-    final dst = domainSeparator == null ? prefix : '$prefix$domainSeparator';
-    return (await hashToField(data, dst)).single;
+    final dstBuilder = BytesBuilder(copy: false);
+    // TODO: precompute ascii bytes
+    dstBuilder.add(AsciiEncoder().convert(prefix));
+    dstBuilder.add(domainSeparator.asUint8List());
+    final fullDomainSeparator = dstBuilder.takeBytes().buffer;
+    return (await hashToField(data, fullDomainSeparator, count: 1)).single;
   }
 
   @override
   ECFieldElement randomScalar() {
-    final random = SecureRandom();
+    // FIXME: this shitty SecureRandom is not working
+    final random = FortunaRandom();
+
+    // We need to seed FortunaRandom ourselves...
+    final nativeRandom = Random.secure();
+    final seed = List.generate(32, (_) => nativeRandom.nextInt(256));
+    random.seed(KeyParameter(Uint8List.fromList(seed)));
+
     BigInt scalar = BigInt.zero;
 
     while (scalar == BigInt.zero || scalar > order) {
@@ -191,6 +216,11 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   ECFieldElement deserializeScalar(ByteBuffer data) {
     final raw = bytesToInt(data.asUint8List());
     return _curve.fromBigInteger(raw);
+  }
+
+  @override
+  ECPoint scalarBaseMult(ECFieldElement scalar) {
+    return (_params.G * scalar.toBigInteger())!;
   }
 }
 

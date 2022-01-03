@@ -74,9 +74,10 @@ expandMessageTest({
     final expander = UniformMessageExpander.sha256(
       lengthInBytes: lengthInBytes,
     );
+    final encoder = AsciiEncoder();
     final expanded = await expander.expand(
-      AsciiEncoder().convert(msg).buffer,
-      dst,
+      encoder.convert(msg).buffer,
+      encoder.convert(dst).buffer,
     );
     final encoded = hex.encode(expanded);
     expect(encoded, uniformBytes);

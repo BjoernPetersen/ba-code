@@ -6,7 +6,9 @@ import 'package:test/test.dart';
 
 void main() {
   final primeOrderGroup = PrimeOrderGroupImpl();
-  final dst = 'QUUX-V01-CS02-with-P384_XMD:SHA-384_SSWU_RO_';
+  final dst = AsciiEncoder().convert(
+    'QUUX-V01-CS02-with-P384_XMD:SHA-384_SSWU_RO_',
+  ).buffer;
 
   group('hash_to_field', () {
     for (final vector in vectors) {

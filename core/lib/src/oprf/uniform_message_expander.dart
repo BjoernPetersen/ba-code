@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:cryptography/cryptography.dart';
@@ -36,8 +35,11 @@ class UniformMessageExpander {
 
   /// Implementation of
   /// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-12#section-5.4.1
-  Future<List<int>> expand(ByteBuffer message, String domainSeparator) async {
-    final domainSeparatorBytes = AsciiEncoder().convert(domainSeparator);
+  Future<List<int>> expand(
+    ByteBuffer message,
+    ByteBuffer domainSeparator,
+  ) async {
+    final domainSeparatorBytes = domainSeparator.asUint8List();
     final ell = (_lengthInBytes / _hasher.hashLengthInBytes).ceil();
     if (ell > 255) {
       throw ArgumentError.value(_lengthInBytes, 'lengthInBytes');
