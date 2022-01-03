@@ -44,7 +44,7 @@ void main() {
         test(vector.name, () async {
           final evaluatedElement = await oprf.evaluate(
             privateKey: secretKey,
-            input: vector.input,
+            blindedElement: vector.blindedElement,
             info: vector.info,
           );
 
@@ -122,23 +122,25 @@ final List<Vector> vectors = [
   Vector(
     input: '00',
     info: '7465737420696e666f',
-    blind: 'c604c785ada70d77a5256ae21767de8c3304115237d262134f5e46e512cf8e03',
+    blind:
+        '359073c015b92d15450f7fb395bf52c6ea98384c491fe4e4d423b59de7b0df382902c13bdc9993d3717bda68fc080b99',
     blindedElement:
-        '744441a5d3ee12571a84d34812443eba2b6521a47265ad655f01e759b3dd7d35',
+        '0285d803c65fda56993a296b99e8f4944e45cccb9b322bbc265c91a21d2c9cd146212aefbf3126ed59d84c32d6ab823b66',
     evaluationElement:
-        '4254c503ee2013262473eec926b109b018d699b8dd954ee878bc17b159696353',
+        '026061a4ccfe38777e725855c96570fe85303cd70567007e489d0aa8bfced0e47579ecbc290e5150b9e84bf25188294f7e',
     output:
-        '9aef8983b729baacb7ecf1be98d1276ca29e7d62dbf39bc595be018b66b199119f18579a9ae96a39d7d506c9e00f75b433a870d76ba755a3e7196911fff89ff3',
+        'bc2c3c895f96d769703aec18359cbc0e84b41248559f0bd44f1e54675223c77e00874bbe61c1c320d3c95aee5a8c752f',
   ),
   Vector(
     input: '5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a',
     info: '7465737420696e666f',
-    blind: '5ed895206bfc53316d307b23e46ecc6623afb3086da74189a416012be037e50b',
+    blind:
+        '21ece4f9b6ffd01ce82082545413bd9bb5e8f3c63b86ae88d9ce0530b01cb1c23382c7ec9bdd6e75898e4877d8e2bc17',
     blindedElement:
-        'f4eeea4e1bcb2ec818ee2d5c1fcec56c24064a9ff4bea5b3dd6877800fc28e4d',
+        '0211dd06e40b902006c33a92dc476a7c708b6b46c990656239cd6867ff0be5867d859517eaf7ea9bad10702b80a9dc6bdc',
     evaluationElement:
-        '185dae43b6209dacbc41a62fd4889700d11eeeff4e83ffbc72d54daee7e25659',
+        '03a1d34b657f6267b29338592e3c769db5d3fc8713bf2eb7238efb8138d5af8c56f9437315a5c58761b35cbfc0e1d2511d',
     output:
-        'f556e2d83e576b4edc890472572d08f0d90d2ecc52a73b35b2a8416a72ff676549e3a83054fdf4fd16fe03e03bee7bb32cbd83c7ca212ea0d03b8996c2c268b2',
+        'ee37530d0d7b20635fbc476317343b257750ffb3e83a2865ce2a46e59591f854b8301d6ca7d063322314a33b953c8bd5',
   ),
 ];

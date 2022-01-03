@@ -66,7 +66,7 @@ class OprfImpl extends Oprf {
   @override
   Future<Bytes> evaluate({
     required Bytes privateKey,
-    required Bytes input,
+    required Bytes blindedElement,
     // TODO "currently set to nil" in OPAQUE
     required PublicInput info,
   }) async {
@@ -84,7 +84,7 @@ class OprfImpl extends Oprf {
       // TODO: type this
       throw ArgumentError('InverseError');
     }
-    final deserializedInput = group.deserializeElement(input);
+    final deserializedInput = group.deserializeElement(blindedElement);
     final z = (deserializedInput * t.invert().toBigInteger())!;
 
     return group.serializeElement(z);

@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:opaque/src/oprf/oprf_impl.dart';
 import 'package:opaque/src/oprf/prime_order_group.dart';
 import 'package:opaque/src/oprf/util.dart';
@@ -38,7 +36,7 @@ abstract class Oprf {
 
   Future<Bytes> evaluate({
     required Bytes privateKey,
-    required Bytes input,
+    required Bytes blindedElement,
     // TODO "currently set to nil" in OPAQUE
     required PublicInput info,
   });

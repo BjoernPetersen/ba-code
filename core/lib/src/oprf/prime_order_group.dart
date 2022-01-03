@@ -193,14 +193,38 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     return _curve.fromBigInteger(scalar);
   }
 
+  // https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.202.2977&rep=rep1&type=pdf
   @override
   Bytes serializeElement(ECPoint element) {
-    return element.getEncoded();
+    if (element.isInfinity) {
+      return smallIntToBytes(0, 49);
+    }
+
+    assert(q.isOdd);
+    final yTilde = element.y!.toBigInteger()!.remainder(BigInt.two);
+    final y = yTilde == BigInt.zero ? 0x02 : 0x03;
+    final x = element.x!.toBigInteger()!;
+
+    return concatBytes([
+      smallIntToBytes(y, 1),
+      intToBytes(x, 48),
+    ]);
   }
 
   @override
   ECPoint deserializeElement(Bytes data) {
-    return _curve.decodePoint(data) as ECPoint;
+    final y = data[0];
+    final int yTilde;
+    if (y == 0x02) {
+      yTilde = 0;
+    } else if (y == 0x03) {
+      yTilde = 1;
+    } else {
+      throw ArgumentError.value(y, 'y', 'Invalid value for y');
+    }
+
+    final x = bytesToInt(data.sublist(1));
+    return _curve.decompressPoint(yTilde, x);
   }
 
   @override
