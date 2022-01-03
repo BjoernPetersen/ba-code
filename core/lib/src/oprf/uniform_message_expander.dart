@@ -43,13 +43,13 @@ class UniformMessageExpander {
       throw ArgumentError.value(_lengthInBytes, 'lengthInBytes');
     }
 
-    final domainSeparatorLengthBytes = intToBytes(
-      BigInt.from(domainSeparator.length),
-      1,
+    final domainSeparatorLengthBytes = smallIntToBytes(
+      domainSeparator.length,
+      length: 1,
     );
     final dstPrime = domainSeparator + domainSeparatorLengthBytes;
-    final zPad = intToBytes(BigInt.zero, _hasher.blockLengthInBytes);
-    final lengthBytes = intToBytes(BigInt.from(_lengthInBytes), 2);
+    final zPad = smallIntToBytes(0, length: _hasher.blockLengthInBytes);
+    final lengthBytes = smallIntToBytes(_lengthInBytes, length: 2);
 
     final messageBytes = message;
     final List<int> msgPrime = [

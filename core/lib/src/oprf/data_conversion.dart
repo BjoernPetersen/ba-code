@@ -1,10 +1,8 @@
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:opaque/src/oprf/util.dart';
 
-const _smallBase = 256;
-final _base = BigInt.from(_smallBase);
+final _base = BigInt.from(256);
 
 /// https://datatracker.ietf.org/doc/html/rfc8017#section-4.1
 Uint8List intToBytes(BigInt number, int length) {
@@ -27,23 +25,8 @@ Uint8List intToBytes(BigInt number, int length) {
 }
 
 /// https://datatracker.ietf.org/doc/html/rfc8017#section-4.1
-Bytes smallIntToBytes(int number, int length) {
-  if (number >= pow(_smallBase, length)) {
-    throw ArgumentError.value(
-      number,
-      'number',
-      'input number too large for desired length',
-    );
-  }
-
-  var remaining = number;
-  final result = Bytes(length);
-  for (int i = length - 1; remaining != 0 && i >= 0; i -= 1) {
-    result[i] = (remaining % _smallBase).toInt();
-    remaining = remaining ~/ _smallBase;
-  }
-
-  return result;
+Bytes smallIntToBytes(int number, {required int length}) {
+  return intToBytes(BigInt.from(number), length);
 }
 
 /// https://datatracker.ietf.org/doc/html/rfc8017#section-4.2

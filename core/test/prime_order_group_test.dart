@@ -10,7 +10,10 @@ void main() {
     for (final vector in vectors) {
       final messageBytes = vector.msg.asciiBytes();
       test('Message "${vector.msg}"', () async {
-        final result = await primeOrderGroup.hashToField(messageBytes, dst);
+        final result = await primeOrderGroup.hashToField(
+          data: messageBytes,
+          domainSeparator: dst,
+        );
         final resultInts =
             result.map((e) => e.toBigInteger()!).toList(growable: false);
         expect(resultInts, vector.u);
@@ -24,13 +27,39 @@ void main() {
       for (final vector in vectors) {
         final messageBytes = vector.msg.asciiBytes();
         test('Message "${vector.msg}"', () async {
-          final result = await primeOrderGroup.hashToCurve(messageBytes, dst);
+          final result = await primeOrderGroup.hashToCurve(
+            data: messageBytes,
+            domainSeparator: dst,
+          );
           expect(result.x?.toBigInteger(), vector.p.x);
           expect(result.y?.toBigInteger(), vector.p.y);
         });
       }
     },
   );
+
+  group('serialization', () {
+    group('scalars', () {
+      test('round trip', () {
+        final scalar = primeOrderGroup.randomScalar();
+        final serialized = primeOrderGroup.serializeScalar(scalar);
+        final deserialized = primeOrderGroup.deserializeScalar(serialized);
+        expect(deserialized, scalar);
+      });
+    });
+
+    group('elements', () {
+      test('round trip', () async {
+        final element = await primeOrderGroup.hashToGroup(
+          Bytes.fromList([1, 2, 3, 4]),
+          domainSeparator: Bytes.fromList([0, 1, 2, 3]),
+        );
+        final serialized = primeOrderGroup.serializeElement(element);
+        final deserialized = primeOrderGroup.deserializeElement(serialized);
+        expect(deserialized, element);
+      });
+    });
+  });
 }
 
 class Vector {

@@ -18,7 +18,7 @@ void main() {
   group('deriveKey', () {
     test('test vector key', () async {
       final keyPair = await oprf.deriveKeyPair(seed);
-      expect(keyPair.private, skSm);
+      expect(keyPair.private.asString(), skSm);
     });
   });
 
@@ -27,7 +27,7 @@ void main() {
       for (final vector in vectors) {
         test(vector.name, () async {
           final BlindPair blinds = await oprf.blind(
-            vector.input,
+            input: vector.input,
             blind: vector.blind,
           );
           expect(blinds.blind, vector.blind);
@@ -39,6 +39,27 @@ void main() {
       }
     });
 
+    group(
+      'Unblind',
+      () {
+        for (final vector in vectors) {
+          test(vector.name, () async {
+            final unblinded = await oprf.unblind(
+              blind: vector.blind,
+              blindedElement: vector.blindedElement,
+            );
+
+            final hashedToGroup = await primeGroup.hashToGroup(
+              vector.input,
+              domainSeparator: oprf.contextString,
+            );
+            expect(unblinded, hashedToGroup);
+          });
+        }
+      },
+      skip: true,
+    );
+
     group('Evaluate', () {
       for (final vector in vectors) {
         test(vector.name, () async {
@@ -49,8 +70,8 @@ void main() {
           );
 
           expect(
-            evaluatedElement,
-            vector.evaluationElement,
+            evaluatedElement.asString(),
+            vector.evaluationElement.asString(),
           );
         });
       }

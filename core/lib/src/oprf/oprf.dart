@@ -32,7 +32,7 @@ abstract class Oprf {
 
   factory Oprf.withGroup(PrimeOrderGroup group) => OprfImpl(group);
 
-  Future<BlindPair> blind(Bytes input);
+  Future<BlindPair> blind({required Bytes input});
 
   Future<Bytes> evaluate({
     required Bytes privateKey,

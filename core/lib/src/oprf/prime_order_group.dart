@@ -58,9 +58,9 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   @override
   ECPoint get identity => _curve.infinity!;
 
-  Future<List<ECFieldElement>> hashToField(
-    Bytes data,
-    Bytes domainSeparator, {
+  Future<List<ECFieldElement>> hashToField({
+    required Bytes data,
+    required Bytes domainSeparator,
     int count = 2,
   }) async {
     final l = 72;
@@ -73,17 +73,21 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     for (int i = 0; i < count; i += 1) {
       final offset = l * i;
       final tv = expanded.sublist(offset, offset + l);
-      final rawField = bytesToInt(tv).remainder(_curve.q!);
+      final rawField = bytesToInt(tv).remainder(q);
       result.add(_curve.fromBigInteger(rawField));
     }
     return result;
   }
 
-  Future<ECPoint> hashToCurve(
-    Bytes data,
-    Bytes domainSeparator,
-  ) async {
-    final fields = await hashToField(data, domainSeparator, count: 2);
+  Future<ECPoint> hashToCurve({
+    required Bytes data,
+    required Bytes domainSeparator,
+  }) async {
+    final fields = await hashToField(
+      data: data,
+      domainSeparator: domainSeparator,
+      count: 2,
+    );
     final points = fields.map(_mapToCurveSimpleSwu).toList(growable: false);
     // q1.y is wrong for empty message and abcdef0-9
     final sum = points.reduce((a, b) => (a + b)!);
@@ -157,7 +161,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
       prefix.asciiBytes(),
       domainSeparator,
     ]);
-    return hashToCurve(data, fullDomainSeparator);
+    return hashToCurve(data: data, domainSeparator: fullDomainSeparator);
   }
 
   @override
@@ -170,7 +174,12 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
       prefix.asciiBytes(),
       domainSeparator,
     ]);
-    return (await hashToField(data, fullDomainSeparator, count: 1)).single;
+    final hashed = (await hashToField(
+      data: data,
+      domainSeparator: fullDomainSeparator,
+      count: 1,
+    ));
+    return hashed.single;
   }
 
   @override
@@ -197,7 +206,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   @override
   Bytes serializeElement(ECPoint element) {
     if (element.isInfinity) {
-      return smallIntToBytes(0, 49);
+      return smallIntToBytes(0, length: 49);
     }
 
     assert(q.isOdd);
@@ -206,7 +215,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     final x = element.x!.toBigInteger()!;
 
     return concatBytes([
-      smallIntToBytes(y, 1),
+      smallIntToBytes(y, length: 1),
       intToBytes(x, 48),
     ]);
   }

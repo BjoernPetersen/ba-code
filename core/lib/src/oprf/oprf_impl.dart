@@ -16,14 +16,14 @@ class OprfImpl extends Oprf {
     return concatBytes([
       'VOPRF08-'.asciiBytes(),
       // Mode 0 is "base mode", which we are implementing
-      intToBytes(BigInt.zero, 1),
+      smallIntToBytes(0, length: 1),
       // Only valid for p384, sha-384
-      intToBytes(BigInt.from(4), 2),
+      smallIntToBytes(4, length: 2),
     ]);
   }
 
   @override
-  Future<BlindPair> blind(Bytes input, {Bytes? blind}) async {
+  Future<BlindPair> blind({required Bytes input, Bytes? blind}) async {
     final ECFieldElement effectiveBlind;
     if (blind == null) {
       effectiveBlind = group.randomScalar();
@@ -45,7 +45,7 @@ class OprfImpl extends Oprf {
     required Bytes blindedElement,
   }) async {
     final z = group.deserializeElement(blindedElement);
-    final n = z * group.deserializeScalar(blind).invert().toBigInteger();
+    final n = z * group.deserializeScalar(blind).invert().toBigInteger()!;
     return group.serializeElement(n!);
   }
 
@@ -73,7 +73,7 @@ class OprfImpl extends Oprf {
     final context = concatBytes([
       'Context-'.asciiBytes(),
       contextString,
-      smallIntToBytes(info.lengthInBytes, 2),
+      smallIntToBytes(info.lengthInBytes, length: 2),
       info,
     ]);
 
@@ -108,13 +108,13 @@ class OprfImpl extends Oprf {
       contextString,
     ]);
     final hashInput = concatBytes([
-      smallIntToBytes(input.lengthInBytes, 2),
+      smallIntToBytes(input.lengthInBytes, length: 2),
       input,
-      smallIntToBytes(info.lengthInBytes, 2),
+      smallIntToBytes(info.lengthInBytes, length: 2),
       info,
-      smallIntToBytes(unblindedElement.lengthInBytes, 2),
+      smallIntToBytes(unblindedElement.lengthInBytes, length: 2),
       unblindedElement,
-      smallIntToBytes(dst.lengthInBytes, 2),
+      smallIntToBytes(dst.lengthInBytes, length: 2),
       dst,
     ]);
     final digest = await crypto.Sha384().hash(hashInput);
