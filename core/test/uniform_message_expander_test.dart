@@ -1,7 +1,6 @@
-import 'dart:convert';
-
 import 'package:convert/convert.dart';
 import 'package:opaque/src/oprf/uniform_message_expander.dart';
+import 'package:opaque/src/oprf/util.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
@@ -74,10 +73,9 @@ expandMessageTest({
     final expander = UniformMessageExpander.sha256(
       lengthInBytes: lengthInBytes,
     );
-    final encoder = AsciiEncoder();
     final expanded = await expander.expand(
-      encoder.convert(msg).buffer,
-      encoder.convert(dst).buffer,
+      msg.asciiBytes().buffer,
+      dst.asciiBytes().buffer,
     );
     final encoded = hex.encode(expanded);
     expect(encoded, uniformBytes);

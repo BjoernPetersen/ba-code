@@ -1,13 +1,14 @@
-import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:opaque/src/oprf/data_conversion.dart';
 import 'package:opaque/src/oprf/uniform_message_expander.dart';
+import 'package:opaque/src/oprf/util.dart';
+import 'package:pointycastle/api.dart';
 import 'package:pointycastle/ecc/api.dart';
 import 'package:pointycastle/ecc/curves/secp384r1.dart';
 import 'package:pointycastle/ecc/ecc_fp.dart' as fp;
-import 'package:pointycastle/export.dart';
+import 'package:pointycastle/random/fortuna_random.dart';
 
 /// Interface defined by Internet-Draft `draft-irtf-cfrg-voprf-08`.
 abstract class PrimeOrderGroup<Element extends ECPoint,
@@ -155,11 +156,10 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     required ByteBuffer domainSeparator,
   }) {
     final prefix = 'HashToGroup-';
-    final dstBuilder = BytesBuilder(copy: false);
-    // TODO: precompute ascii bytes
-    dstBuilder.add(AsciiEncoder().convert(prefix));
-    dstBuilder.add(domainSeparator.asUint8List());
-    final fullDomainSeparator = dstBuilder.takeBytes().buffer;
+    final fullDomainSeparator = concatBuffers([
+      prefix.asciiBytes().buffer,
+      domainSeparator,
+    ]);
     return hashToCurve(data, fullDomainSeparator);
   }
 
@@ -169,11 +169,10 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     required ByteBuffer domainSeparator,
   }) async {
     final prefix = 'HashToScalar-';
-    final dstBuilder = BytesBuilder(copy: false);
-    // TODO: precompute ascii bytes
-    dstBuilder.add(AsciiEncoder().convert(prefix));
-    dstBuilder.add(domainSeparator.asUint8List());
-    final fullDomainSeparator = dstBuilder.takeBytes().buffer;
+    final fullDomainSeparator = concatBuffers([
+      prefix.asciiBytes().buffer,
+      domainSeparator,
+    ]);
     return (await hashToField(data, fullDomainSeparator, count: 1)).single;
   }
 

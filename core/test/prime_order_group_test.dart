@@ -1,14 +1,13 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:opaque/src/oprf/prime_order_group.dart';
+import 'package:opaque/src/oprf/util.dart';
 import 'package:test/test.dart';
 
 void main() {
   final primeOrderGroup = PrimeOrderGroupImpl();
-  final dst = AsciiEncoder().convert(
-    'QUUX-V01-CS02-with-P384_XMD:SHA-384_SSWU_RO_',
-  ).buffer;
+  final dst =
+      'QUUX-V01-CS02-with-P384_XMD:SHA-384_SSWU_RO_'.asciiBytes().buffer;
 
   group('hash_to_field', () {
     for (final vector in vectors) {
@@ -38,7 +37,7 @@ void main() {
 }
 
 ByteBuffer encode(String message) {
-  return AsciiEncoder().convert(message).buffer;
+  return message.asciiBytes().buffer;
 }
 
 class Vector {

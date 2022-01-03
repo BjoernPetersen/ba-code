@@ -24,37 +24,52 @@ void main() {
   });
 
   group('POPRF base mode test vectors', () {
-    for (final vector in vectors) {
-      test(vector.name, () async {
-        final BlindPair blinds = await oprf.blind(
-          vector.input,
-          blind: vector.blind,
-        );
-        expect(blinds.blind.asString(), vector.blind.asString());
-        expect(
-          blinds.blindedElement.asString(),
-          vector.blindedElement.asString(),
-        );
+    group('Blind', () {
+      for (final vector in vectors) {
+        test(vector.name, () async {
+          final BlindPair blinds = await oprf.blind(
+            vector.input,
+            blind: vector.blind,
+          );
+          expect(blinds.blind.asString(), vector.blind.asString());
+          expect(
+            blinds.blindedElement.asString(),
+            vector.blindedElement.asString(),
+          );
+        });
+      }
+    });
 
-        final evaluatedElement = await oprf.evaluate(
-          privateKey: secretKey,
-          input: vector.input,
-          info: vector.info,
-        );
-        expect(
-          evaluatedElement.asString(),
-          vector.evaluationElement.asString(),
-        );
+    group('Evaluate', () {
+      for (final vector in vectors) {
+        test(vector.name, () async {
+          final evaluatedElement = await oprf.evaluate(
+            privateKey: secretKey,
+            input: vector.input,
+            info: vector.info,
+          );
 
-        final output = await oprf.finalize(
-          input: vector.input,
-          blind: blinds.blind,
-          evaluatedElement: evaluatedElement,
-          info: vector.info,
-        );
-        expect(output.asString(), vector.output.asString());
-      });
-    }
+          expect(
+            evaluatedElement.asString(),
+            vector.evaluationElement.asString(),
+          );
+        });
+      }
+    });
+
+    group('Finalize', () {
+      for (final vector in vectors) {
+        test(vector.name, () async {
+          final output = await oprf.finalize(
+            input: vector.input,
+            blind: vector.blind,
+            evaluatedElement: vector.evaluationElement,
+            info: vector.info,
+          );
+          expect(output.asString(), vector.output.asString());
+        });
+      }
+    });
   });
 }
 

@@ -1,8 +1,9 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:cryptography/cryptography.dart' as crypto;
 import 'package:opaque/src/oprf/data_conversion.dart';
 import 'package:opaque/src/oprf/prime_order_group.dart';
+import 'package:opaque/src/oprf/util.dart';
 import 'package:pointycastle/ecc/api.dart';
 
 import 'oprf.dart';
@@ -14,17 +15,13 @@ class OprfImpl extends Oprf {
   OprfImpl(this.group) : contextString = _initContextString();
 
   static ByteBuffer _initContextString() {
-    final builder = BytesBuilder(copy: false);
-
-    builder.add(AsciiEncoder().convert('VOPRF08-'));
-    // Mode 0 is "base mode", which we are implementing
-    builder.add(intToBytes(BigInt.zero, 1));
-    // Only valid for p384, sha-384
-    builder.add(intToBytes(BigInt.from(4), 2));
-
-    return builder
-        .takeBytes()
-        .buffer;
+    return concatBytes([
+      'VOPRF08-'.asciiBytes(),
+      // Mode 0 is "base mode", which we are implementing
+      intToBytes(BigInt.zero, 1),
+      // Only valid for p384, sha-384
+      intToBytes(BigInt.from(4), 2),
+    ]).buffer;
   }
 
   @override
@@ -41,7 +38,17 @@ class OprfImpl extends Oprf {
     final serializedBlinded = group.serializeElement(blinded!);
     return BlindPair(
       blind: blind ?? group.serializeScalar(effectiveBlind),
-      blindedElement: serializedBlinded,);
+      blindedElement: serializedBlinded,
+    );
+  }
+
+  Future<ByteBuffer> unblind({
+    required ByteBuffer blind,
+    required ByteBuffer blindedElement,
+  }) async {
+    final z = group.deserializeElement(blindedElement);
+    final n = z * group.deserializeScalar(blind).invert().toBigInteger();
+    return group.serializeElement(n!);
   }
 
   @override
@@ -50,24 +57,42 @@ class OprfImpl extends Oprf {
       seed,
       domainSeparator: contextString,
     );
-    final publicKey = await group.scalarBaseMult(secret);
+    final publicKey = group.scalarBaseMult(secret);
     return KeyPair(
       private: group.serializeScalar(secret),
       public: group.serializeElement(publicKey),
     );
   }
 
+  /// https://www.ietf.org/archive/id/draft-irtf-cfrg-voprf-08.html#section-3.3.1.1
   @override
   Future<ByteBuffer> evaluate({
     required ByteBuffer privateKey,
     required ByteBuffer input,
     // TODO "currently set to nil" in OPAQUE
     required PublicInput info,
-  }) {
-    // TODO: implement evaluate
-    throw UnimplementedError();
+  }) async {
+    final context = concatBytes([
+      'Context-'.asciiBytes(),
+      contextString.asUint8List(),
+      smallIntToBytes(info.lengthInBytes, 2),
+      info.asUint8List(),
+    ]).buffer;
+
+    final m = await group.hashToScalar(context, domainSeparator: contextString);
+    final privateKeyScalar = group.deserializeScalar(privateKey);
+    final t = privateKeyScalar + m;
+    if (t.toBigInteger() == BigInt.zero) {
+      // TODO: type this
+      throw ArgumentError('InverseError');
+    }
+    final deserializedInput = group.deserializeElement(input);
+    final z = (deserializedInput * t.invert().toBigInteger())!;
+
+    return group.serializeElement(z);
   }
 
+  /// https://www.ietf.org/archive/id/draft-irtf-cfrg-voprf-08.html#section-3.3.3.2
   @override
   Future<ByteBuffer> finalize({
     required ByteBuffer input,
@@ -75,8 +100,26 @@ class OprfImpl extends Oprf {
     required ByteBuffer evaluatedElement,
     // TODO "currently set to nil" in OPAQUE
     required PublicInput info,
-  }) {
-    // TODO: implement finalize
-    throw UnimplementedError();
+  }) async {
+    final unblindedElement = await unblind(
+      blind: blind,
+      blindedElement: evaluatedElement,
+    );
+    final dst = concatBuffers([
+      'Finalize-'.asciiBytes().buffer,
+      contextString,
+    ]);
+    final hashInput = concatBytes([
+      smallIntToBytes(input.lengthInBytes, 2),
+      input.asUint8List(),
+      smallIntToBytes(info.lengthInBytes, 2),
+      info.asUint8List(),
+      smallIntToBytes(unblindedElement.lengthInBytes, 2),
+      unblindedElement.asUint8List(),
+      smallIntToBytes(dst.lengthInBytes, 2),
+      dst.asUint8List(),
+    ]);
+    final digest = await crypto.Sha384().hash(hashInput);
+    return Uint8List.fromList(digest.bytes).buffer;
   }
 }
