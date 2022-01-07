@@ -89,9 +89,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
       count: 2,
     );
     final points = fields.map(_mapToCurveSimpleSwu).toList(growable: false);
-    // q1.y is wrong for empty message and abcdef0-9
     final sum = points.reduce((a, b) => (a + b)!);
-    // TODO: clear_cofactor
     return sum;
   }
 
@@ -143,7 +141,6 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
 
     final xInt = x.toBigInteger()!;
     final yInt = y.toBigInteger()!;
-    // TODO: sign?
     if (u.sign == y.sign) {
       return _curve.createPoint(xInt, yInt);
     } else {
@@ -184,7 +181,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
 
   @override
   ECFieldElement randomScalar() {
-    // FIXME: this shitty SecureRandom is not working
+    // TODO: this random implementation is really sketchy
     final random = FortunaRandom();
 
     // We need to seed FortunaRandom ourselves...

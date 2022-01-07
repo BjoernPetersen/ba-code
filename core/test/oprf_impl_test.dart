@@ -49,6 +49,8 @@ void main() {
               blindedElement: vector.blindedElement,
             );
 
+            // We're hashing before actually blinding, so we obviously can't
+            // get our input back.
             final hashedToGroup = await primeGroup.hashToGroup(
               vector.input,
               domainSeparator: oprf.contextString,
