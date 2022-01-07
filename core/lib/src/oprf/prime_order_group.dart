@@ -79,7 +79,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     final result = <ECFieldElement>[];
 
     // This one took a while
-    final modulus = count ==1 ? order : q;
+    final modulus = count == 1 ? order : q;
 
     for (int i = 0; i < count; i += 1) {
       final offset = l * i;
