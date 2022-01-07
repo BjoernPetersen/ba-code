@@ -11,15 +11,6 @@ Bytes concatBytes(List<Bytes> byteLists) {
   return builder.toBytes();
 }
 
-@deprecated
-ByteBuffer concatBuffers(List<ByteBuffer> buffers) {
-  final builder = BytesBuilder(copy: false);
-  for (final buffer in buffers) {
-    builder.add(buffer.asUint8List());
-  }
-  return builder.toBytes().buffer;
-}
-
 extension Ascii on String {
   static final _encoder = AsciiEncoder();
 
