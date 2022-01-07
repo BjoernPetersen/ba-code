@@ -89,7 +89,6 @@ class OprfImpl extends Oprf {
       throw ArgumentError('InverseError');
     }
     final deserializedInput = group.deserializeElement(blindedElement);
-    // TODO: check inversion
     final z = (deserializedInput * t.modInverse(group.order))!;
 
     return group.serializeElement(z);
