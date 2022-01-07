@@ -32,7 +32,7 @@ class OprfImpl extends Oprf {
     }
 
     final element = await group.hashToGroup(
-      input,
+      data: input,
       domainSeparator: contextString,
     );
     final blinded = element * effectiveBlind.toBigInteger();
@@ -56,7 +56,7 @@ class OprfImpl extends Oprf {
   @override
   Future<KeyPair> deriveKeyPair(Bytes seed) async {
     final secret = await group.hashToScalar(
-      seed,
+      data: seed,
       domainSeparator: contextString,
     );
     final publicKey = group.scalarBaseMult(secret);
@@ -81,7 +81,8 @@ class OprfImpl extends Oprf {
       info,
     ]);
 
-    final m = await group.hashToScalar(context, domainSeparator: contextString);
+    final m =
+        await group.hashToScalar(data: context, domainSeparator: contextString);
     final privateKeyScalar = group.deserializeScalar(privateKey);
     final t = (privateKeyScalar + m).toBigInteger()!;
     if (t == BigInt.zero) {

@@ -19,9 +19,15 @@ abstract class PrimeOrderGroup<Element extends ECPoint,
 
   Element get identity;
 
-  Future<Element> hashToGroup(Bytes data, {required Bytes domainSeparator});
+  Future<Element> hashToGroup({
+    required Bytes data,
+    required Bytes domainSeparator,
+  });
 
-  Future<Scalar> hashToScalar(Bytes data, {required Bytes domainSeparator});
+  Future<Scalar> hashToScalar({
+    required Bytes data,
+    required Bytes domainSeparator,
+  });
 
   Scalar randomScalar();
 
@@ -149,8 +155,8 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   }
 
   @override
-  Future<ECPoint> hashToGroup(
-    Bytes data, {
+  Future<ECPoint> hashToGroup({
+    required Bytes data,
     required Bytes domainSeparator,
   }) {
     final prefix = 'HashToGroup-';
@@ -162,8 +168,8 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   }
 
   @override
-  Future<ECFieldElement> hashToScalar(
-    Bytes data, {
+  Future<ECFieldElement> hashToScalar({
+    required Bytes data,
     required Bytes domainSeparator,
   }) async {
     final prefix = 'HashToScalar-';

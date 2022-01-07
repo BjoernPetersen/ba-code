@@ -52,7 +52,7 @@ void main() {
             // We're hashing before actually blinding, so we obviously can't
             // get our input back.
             final hashedToGroup = await primeGroup.hashToGroup(
-              vector.input,
+              data: vector.input,
               domainSeparator: oprf.contextString,
             );
             final expected = primeGroup.serializeElement(hashedToGroup);

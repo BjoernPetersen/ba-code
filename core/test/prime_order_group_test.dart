@@ -51,7 +51,7 @@ void main() {
     group('elements', () {
       test('round trip', () async {
         final element = await primeOrderGroup.hashToGroup(
-          Bytes.fromList([1, 2, 3, 4]),
+          data: Bytes.fromList([1, 2, 3, 4]),
           domainSeparator: Bytes.fromList([0, 1, 2, 3]),
         );
         final serialized = primeOrderGroup.serializeElement(element);
