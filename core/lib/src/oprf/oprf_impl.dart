@@ -36,10 +36,9 @@ class OprfImpl extends Oprf {
       domainSeparator: contextString,
     );
     final blinded = element * effectiveBlind.toBigInteger();
-    final serializedBlinded = group.serializeElement(blinded!);
     return BlindPair(
       blind: blind ?? group.serializeScalar(effectiveBlind),
-      blindedElement: serializedBlinded,
+      blindedElement: group.serializeElement(blinded!),
     );
   }
 

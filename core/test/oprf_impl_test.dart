@@ -32,8 +32,8 @@ void main() {
           );
           expect(blinds.blind, vector.blind);
           expect(
-            blinds.blindedElement,
-            vector.blindedElement,
+            blinds.blindedElement.asString(),
+            vector.blindedElement.asString(),
           );
         });
       }
