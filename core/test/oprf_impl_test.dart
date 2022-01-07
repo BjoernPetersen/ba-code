@@ -53,11 +53,11 @@ void main() {
               vector.input,
               domainSeparator: oprf.contextString,
             );
-            expect(unblinded, hashedToGroup);
+            final expected = primeGroup.serializeElement(hashedToGroup);
+            expect(unblinded.asString(), expected.asString());
           });
         }
       },
-      skip: true,
     );
 
     group('Evaluate', () {

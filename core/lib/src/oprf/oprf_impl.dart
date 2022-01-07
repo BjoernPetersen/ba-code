@@ -31,8 +31,11 @@ class OprfImpl extends Oprf {
       effectiveBlind = group.deserializeScalar(blind);
     }
 
-    final p = await group.hashToGroup(input, domainSeparator: contextString);
-    final blinded = p * effectiveBlind.toBigInteger();
+    final element = await group.hashToGroup(
+      input,
+      domainSeparator: contextString,
+    );
+    final blinded = element * effectiveBlind.toBigInteger();
     final serializedBlinded = group.serializeElement(blinded!);
     return BlindPair(
       blind: blind ?? group.serializeScalar(effectiveBlind),
@@ -44,9 +47,11 @@ class OprfImpl extends Oprf {
     required Bytes blind,
     required Bytes blindedElement,
   }) async {
-    final z = group.deserializeElement(blindedElement);
-    final n = z * group.deserializeScalar(blind).invert().toBigInteger()!;
-    return group.serializeElement(n!);
+    final desBlinded = group.deserializeElement(blindedElement);
+    final desBlind = group.deserializeScalar(blind);
+    final element =
+        desBlinded * desBlind.toBigInteger()!.modInverse(group.order);
+    return group.serializeElement(element!);
   }
 
   @override
@@ -79,13 +84,14 @@ class OprfImpl extends Oprf {
 
     final m = await group.hashToScalar(context, domainSeparator: contextString);
     final privateKeyScalar = group.deserializeScalar(privateKey);
-    final t = privateKeyScalar + m;
-    if (t.toBigInteger() == BigInt.zero) {
+    final t = (privateKeyScalar + m).toBigInteger()!;
+    if (t == BigInt.zero) {
       // TODO: type this
       throw ArgumentError('InverseError');
     }
     final deserializedInput = group.deserializeElement(blindedElement);
-    final z = (deserializedInput * t.invert().toBigInteger())!;
+    // TODO: check inversion
+    final z = (deserializedInput * t.modInverse(group.order))!;
 
     return group.serializeElement(z);
   }
