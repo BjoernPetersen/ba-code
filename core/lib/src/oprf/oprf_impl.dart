@@ -81,17 +81,19 @@ class OprfImpl extends Oprf {
       info,
     ]);
 
-    final m =
-        await group.hashToScalar(data: context, domainSeparator: contextString);
-    final privateKeyScalar = group.deserializeScalar(privateKey);
-    final t = (privateKeyScalar + m).toBigInteger()!;
+    final m = await group.hashToScalar(
+      data: context,
+      domainSeparator: contextString,
+    );
+    final privateKeyScalar =
+        group.deserializeScalar(privateKey).toBigInteger()!;
+    final t = (privateKeyScalar + m.toBigInteger()!).remainder(group.order);
     if (t == BigInt.zero) {
       // TODO: type this
       throw ArgumentError('InverseError');
     }
     final deserializedInput = group.deserializeElement(blindedElement);
     final z = (deserializedInput * t.modInverse(group.order))!;
-
     return group.serializeElement(z);
   }
 

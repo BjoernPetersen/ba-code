@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:convert/convert.dart';
 import 'package:opaque/src/oprf/data_conversion.dart';
 import 'package:opaque/src/oprf/uniform_message_expander.dart';
 import 'package:opaque/src/oprf/util.dart';
@@ -76,10 +77,15 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     );
     final expanded = await expander.expand(data, domainSeparator);
     final result = <ECFieldElement>[];
+
+    // This one took a while
+    final modulus = count ==1 ? order : q;
+
     for (int i = 0; i < count; i += 1) {
       final offset = l * i;
       final tv = expanded.sublist(offset, offset + l);
-      final rawField = bytesToInt(tv).remainder(q);
+      // TODO order or q?
+      final rawField = bytesToInt(tv).remainder(modulus);
       result.add(_curve.fromBigInteger(rawField));
     }
     return result;
