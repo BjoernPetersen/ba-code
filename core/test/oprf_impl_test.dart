@@ -86,7 +86,7 @@ void main() {
             evaluatedElement: vector.evaluationElement,
             info: vector.info,
           );
-          expect(output, vector.output);
+          expect(output.asString(), vector.output.asString());
         });
       }
     });

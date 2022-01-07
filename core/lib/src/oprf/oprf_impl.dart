@@ -103,7 +103,7 @@ class OprfImpl extends Oprf {
       blind: blind,
       blindedElement: evaluatedElement,
     );
-    final dst = concatBytes([
+    final finalizeDst = concatBytes([
       'Finalize-'.asciiBytes(),
       contextString,
     ]);
@@ -114,8 +114,8 @@ class OprfImpl extends Oprf {
       info,
       smallIntToBytes(unblindedElement.lengthInBytes, length: 2),
       unblindedElement,
-      smallIntToBytes(dst.lengthInBytes, length: 2),
-      dst,
+      smallIntToBytes(finalizeDst.lengthInBytes, length: 2),
+      finalizeDst,
     ]);
     final digest = await crypto.Sha384().hash(hashInput);
     return Bytes.fromList(digest.bytes);
