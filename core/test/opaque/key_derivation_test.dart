@@ -28,10 +28,6 @@ class Vector {
   final Bytes envelopeNonce;
   final Bytes authKey;
 
-  // TODO: add once Harden() is available to test extract()
-  // final Bytes blind;
-  // final String password;
-
   Vector.sha256({
     required String randomizedPassword,
     required String envelopeNonce,
