@@ -61,7 +61,7 @@ jobs:
         with:
           channel: 'beta'
       - name: Run Tests
-        run: flutter test --no-pub
+        run: flutter test
         working-directory: ./app
 
   check_format:
