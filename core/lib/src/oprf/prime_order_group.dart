@@ -1,11 +1,11 @@
 import 'dart:math';
 
-import 'package:convert/convert.dart';
 import 'package:opaque/src/oprf/data_conversion.dart';
 import 'package:opaque/src/oprf/uniform_message_expander.dart';
 import 'package:opaque/src/oprf/util.dart';
 import 'package:pointycastle/api.dart';
 import 'package:pointycastle/ecc/api.dart';
+import 'package:pointycastle/ecc/curves/secp256r1.dart';
 import 'package:pointycastle/ecc/curves/secp384r1.dart';
 import 'package:pointycastle/ecc/ecc_fp.dart' as fp;
 import 'package:pointycastle/random/fortuna_random.dart';
@@ -13,8 +13,11 @@ import 'package:pointycastle/random/fortuna_random.dart';
 /// Interface defined by Internet-Draft `draft-irtf-cfrg-voprf-08`.
 abstract class PrimeOrderGroup<Element extends ECPoint,
     Scalar extends ECFieldElement> {
+  static PrimeOrderGroup<ECPoint, ECFieldElement> p256() =>
+      PrimeOrderGroupImpl.p256();
+
   static PrimeOrderGroup<ECPoint, ECFieldElement> p384() =>
-      PrimeOrderGroupImpl();
+      PrimeOrderGroupImpl.p384();
 
   BigInt get order;
 
@@ -47,14 +50,33 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   final ECDomainParameters _params;
 
   final fp.ECCurve _curve;
+  final UniformMessageExpander Function({int lengthInBytes}) expanderFactory;
+  final int _l;
+  final BigInt _z;
 
   PrimeOrderGroupImpl._(
-    this._params,
-  ) : _curve = _params.curve as fp.ECCurve;
+    this._params, {
+    required this.expanderFactory,
+    required int L,
+    required int Z,
+  })  : _curve = _params.curve as fp.ECCurve,
+        _l = L,
+        _z = BigInt.from(Z);
 
-  PrimeOrderGroupImpl()
+  PrimeOrderGroupImpl.p256()
+      : this._(
+          ECCurve_secp256r1(),
+          expanderFactory: UniformMessageExpander.sha256,
+          L: 48,
+          Z: -10,
+        );
+
+  PrimeOrderGroupImpl.p384()
       : this._(
           ECCurve_secp384r1(),
+          expanderFactory: UniformMessageExpander.sha384,
+          L: 72,
+          Z: -12,
         );
 
   @override
@@ -70,9 +92,9 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     required Bytes domainSeparator,
     int count = 2,
   }) async {
-    final l = 72;
+    final l = _l;
     final lengthInBytes = l * count;
-    final expander = UniformMessageExpander.sha384(
+    final expander = expanderFactory(
       lengthInBytes: lengthInBytes,
     );
     final expanded = await expander.expand(data, domainSeparator);
@@ -115,19 +137,17 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
 
   /// https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-6.6.2
   ECPoint _mapToCurveSimpleSwu(ECFieldElement field) {
-    // Values chosen as per https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-8.3
-    final ECFieldElement A = _curve.fromBigInteger(BigInt.from(-3));
-    final ECFieldElement B = _curve.fromBigInteger(BigInt.parse(
-      'b3312fa7e23ee7e4988e056be3f82d19181d9c6efe8141120314088f5013875ac656398d8a2ed19d2a85c8edd3ec2aef',
-      radix: 16,
-    ));
-    final ECFieldElement Z = _curve.fromBigInteger(BigInt.from(-12));
+    // Values could be chosen as per
+    // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-8.3
+    // but we take the differing value A that's used in pointycastle, which is
+    // also valid. B is identical.
+    final ECFieldElement A = _curve.a!;
+    final ECFieldElement B = _curve.b!;
+    final ECFieldElement Z = _curve.fromBigInteger(_z);
     final ECFieldElement u = field;
 
     final ECFieldElement one = _curve.fromBigInteger(BigInt.one);
 
-    // TODO: check which one is "more right"
-    //final tv1 =_curve.fromBigInteger(inv(((Z.square() * u.modPow(4, _curve)) + (Z * u.square())).toBigInteger()!));
     final tv1 =
         ((Z.square() * u.modPow(4, _curve)) + (Z * u.square())).invert();
     final ECFieldElement x1;

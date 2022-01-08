@@ -27,6 +27,14 @@ class UniformMessageExpander {
         lengthInBytes,
       );
 
+  factory UniformMessageExpander.sha512({
+    int lengthInBytes = 98,
+  }) =>
+      UniformMessageExpander._(
+        Sha512(),
+        lengthInBytes,
+      );
+
   Future<List<int>> _hash(List<int> input) async {
     final hash = await _hasher.hash(input);
     return hash.bytes;
