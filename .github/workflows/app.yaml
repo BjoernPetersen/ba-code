@@ -48,7 +48,7 @@ jobs:
           restore-keys: |
             ${{ hashFiles('app/pubspec.lock') }}-
           path: |
-            /opt/hostedtoolcache/flutter/
+            ${{ runner.tool_cache }}/flutter/
             app/.dart_tool/
             app/lib/**/*.g.dart
             app/test/**/*.g.dart
@@ -78,7 +78,7 @@ jobs:
           restore-keys: |
             ${{ hashFiles('app/pubspec.lock') }}-
           path: |
-            /opt/hostedtoolcache/flutter/
+            ${{ runner.tool_cache }}/flutter/
             app/.dart_tool/
       - name: Install Flutter
         uses: subosito/flutter-action@v2
@@ -105,7 +105,7 @@ jobs:
           restore-keys: |
             ${{ hashFiles('app/pubspec.lock') }}-
           path: |
-            /opt/hostedtoolcache/flutter/
+            ${{ runner.tool_cache }}/flutter/
             app/.dart_tool/
             app/lib/**/*.g.dart
             app/test/**/*.g.dart
