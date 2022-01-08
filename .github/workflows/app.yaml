@@ -15,7 +15,7 @@ jobs:
           restore-keys: |
             ${{ hashFiles('app/pubspec.lock') }}-
           path: |
-            /opt/hostedtoolcache/flutter/
+            ${{ runner.tool_cache }}/flutter/
             app/.dart_tool/
             app/lib/**/*.g.dart
             app/test/**/*.g.dart
