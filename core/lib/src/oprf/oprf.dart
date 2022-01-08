@@ -1,16 +1,7 @@
 import 'package:opaque/src/oprf/oprf_impl.dart';
-import 'package:opaque/src/oprf/prime_order_group.dart';
 import 'package:opaque/src/oprf/util.dart';
 
 typedef PublicInput = Bytes;
-
-@Deprecated('May be unnecessary')
-class Proof {
-  final Bytes c;
-  final Bytes s;
-
-  Proof({required this.c, required this.s});
-}
 
 class KeyPair {
   final Bytes private;
@@ -30,7 +21,9 @@ class BlindPair {
 abstract class Oprf {
   Oprf();
 
-  factory Oprf.withGroup(PrimeOrderGroup group) => OprfImpl(group);
+  factory Oprf.p256() => OprfImpl.p256();
+
+  factory Oprf.p384() => OprfImpl.p384();
 
   Future<BlindPair> blind({required Bytes input});
 

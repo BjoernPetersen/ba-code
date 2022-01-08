@@ -6,15 +6,34 @@ import 'package:opaque/src/oprf/util.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final primeGroup = PrimeOrderGroup.p384();
-  final oprf = OprfImpl(primeGroup);
-  final seed = hexDecode(
-    'a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3',
-  );
-  final skSm =
-      'b9ff42e68ef6f8eaa3b4d15d15ceb6f3f36b9dc332a3473d64840fc7b44626c6e70336bdecbe01d9c512b7e7d7e6af21';
-  final secretKey = decodeKey(primeGroup, skSm);
+  group('p256', () {
+    final oprf = OprfImpl.p256();
+    final seed = hexDecode(
+      'a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3',
+    );
+    final skSm =
+        'c15d9e9ab36d495d9d62954db6aafe06d3edabf41600d58f9be0737af2719e97';
+    testVectors(oprf, seed, skSm, p256Vectors);
+  });
 
+  group('p384', () {
+    final oprf = OprfImpl.p384();
+    final seed = hexDecode(
+      'a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3',
+    );
+    final skSm =
+        'b9ff42e68ef6f8eaa3b4d15d15ceb6f3f36b9dc332a3473d64840fc7b44626c6e70336bdecbe01d9c512b7e7d7e6af21';
+    testVectors(oprf, seed, skSm, p384Vectors);
+  });
+}
+
+void testVectors(
+  OprfImpl oprf,
+  Bytes seed,
+  String skSm,
+  List<Vector> vectors,
+) {
+  final secretKey = decodeKey(oprf.group, skSm);
   group('deriveKey', () {
     test('test vector key', () async {
       final keyPair = await oprf.deriveKeyPair(seed);
@@ -51,11 +70,11 @@ void main() {
 
             // We're hashing before actually blinding, so we obviously can't
             // get our input back.
-            final hashedToGroup = await primeGroup.hashToGroup(
+            final hashedToGroup = await oprf.group.hashToGroup(
               data: vector.input,
               domainSeparator: oprf.contextString,
             );
-            final expected = primeGroup.serializeElement(hashedToGroup);
+            final expected = oprf.group.serializeElement(hashedToGroup);
             expect(unblinded.asString(), expected.asString());
           });
         }
@@ -141,7 +160,30 @@ class Vector {
         output = hexDecode(output);
 }
 
-final List<Vector> vectors = [
+final List<Vector> p256Vectors = [
+  Vector(
+    input: '00',
+    info: '7465737420696e666f',
+    blind: '5d9e7f6efd3093c32ecceabd57fb03cf760c926d2a7bfa265babf29ec98af0d0',
+    blindedElement:
+        '03e9097c54d2ea05f99424bdf984ea30ecc3614029bd5f1139e70c4e1ae3bdbd92',
+    evaluationElement:
+        '0202e4d1a338659c211900c39855f30025359928d261e6c9558d667b3fbbc811cd',
+    output: '15b96275d06b85741f491fe0cad5cb835baa6c39066cbea73132dcf95e858e1c',
+  ),
+  Vector(
+    input: '5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a',
+    info: '7465737420696e666f',
+    blind: '825155ab61f17605af2ae2e935c78d857c9407bcd45128d57d338f1671b5fcbe',
+    blindedElement:
+        '03fa1ea45dd58d6b516c1252f2791610bf5ff1828c93be8af66786f45fb4d14db5',
+    evaluationElement:
+        '02657822553416d91bb3d707040fd0d5a0555f5cbae7519df3a297747a3ad1dd57',
+    output: 'e97f3f451f3cfce45a530dec0a0dec934cd78c5b656771549072ee236ce070b9',
+  ),
+];
+
+final List<Vector> p384Vectors = [
   Vector(
     input: '00',
     info: '7465737420696e666f',

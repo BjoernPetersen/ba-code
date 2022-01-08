@@ -53,15 +53,21 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   final UniformMessageExpander Function({int lengthInBytes}) expanderFactory;
   final int _l;
   final BigInt _z;
+  final int _serializationSizeElements;
+  final int _serializationSizeScalars;
 
   PrimeOrderGroupImpl._(
     this._params, {
     required this.expanderFactory,
     required int L,
     required int Z,
+    required int Ne,
+    required int Ns,
   })  : _curve = _params.curve as fp.ECCurve,
         _l = L,
-        _z = BigInt.from(Z);
+        _z = BigInt.from(Z),
+        _serializationSizeElements = Ne,
+        _serializationSizeScalars = Ns;
 
   PrimeOrderGroupImpl.p256()
       : this._(
@@ -69,6 +75,8 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
           expanderFactory: UniformMessageExpander.sha256,
           L: 48,
           Z: -10,
+          Ne: 33,
+          Ns: 32,
         );
 
   PrimeOrderGroupImpl.p384()
@@ -77,6 +85,8 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
           expanderFactory: UniformMessageExpander.sha384,
           L: 72,
           Z: -12,
+          Ne: 49,
+          Ns: 48,
         );
 
   @override
@@ -235,7 +245,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
   @override
   Bytes serializeElement(ECPoint element) {
     if (element.isInfinity) {
-      return smallIntToBytes(0, length: 49);
+      return smallIntToBytes(0, length: _serializationSizeElements);
     }
 
     assert(q.isOdd);
@@ -245,7 +255,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
 
     return concatBytes([
       smallIntToBytes(y, length: 1),
-      intToBytes(x, 48),
+      intToBytes(x, _serializationSizeElements - 1),
     ]);
   }
 
@@ -267,7 +277,10 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
 
   @override
   Bytes serializeScalar(ECFieldElement scalar) {
-    return intToBytes(scalar.toBigInteger()!.remainder(order), 48);
+    return intToBytes(
+      scalar.toBigInteger()!.remainder(order),
+      _serializationSizeScalars,
+    );
   }
 
   @override

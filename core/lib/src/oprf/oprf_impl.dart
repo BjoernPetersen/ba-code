@@ -9,16 +9,24 @@ import 'oprf.dart';
 class OprfImpl extends Oprf {
   final PrimeOrderGroup group;
   final Bytes contextString;
+  final crypto.HashAlgorithm hash;
 
-  OprfImpl(this.group) : contextString = _initContextString();
+  OprfImpl.p256()
+      : group = PrimeOrderGroupImpl.p256(),
+        contextString = _initContextString(3),
+        hash = crypto.Sha256();
 
-  static Bytes _initContextString() {
+  OprfImpl.p384()
+      : group = PrimeOrderGroupImpl.p384(),
+        contextString = _initContextString(4),
+        hash = crypto.Sha384();
+
+  static Bytes _initContextString(int id) {
     return concatBytes([
       'VOPRF08-'.asciiBytes(),
       // Mode 0 is "base mode", which we are implementing
       smallIntToBytes(0, length: 1),
-      // Only valid for p384, sha-384
-      smallIntToBytes(4, length: 2),
+      smallIntToBytes(id, length: 2),
     ]);
   }
 
@@ -124,7 +132,7 @@ class OprfImpl extends Oprf {
       smallIntToBytes(finalizeDst.lengthInBytes, length: 2),
       finalizeDst,
     ]);
-    final digest = await crypto.Sha384().hash(hashInput);
+    final digest = await hash.hash(hashInput);
     return Bytes.fromList(digest.bytes);
   }
 }
