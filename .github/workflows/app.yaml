@@ -30,7 +30,7 @@ jobs:
             app/lib/**/*.i18n.dart
             app/test/**/*.i18n.dart
       - name: Install Flutter
-        uses: subosito/flutter-action@v1
+        uses: subosito/flutter-action@v2
         with:
           channel: 'beta'
       - name: Get Dependencies
@@ -63,7 +63,7 @@ jobs:
             app/lib/**/*.i18n.dart
             app/test/**/*.i18n.dart
       - name: Install Flutter
-        uses: subosito/flutter-action@v1
+        uses: subosito/flutter-action@v2
         with:
           channel: 'beta'
       - name: Run Tests
@@ -87,7 +87,7 @@ jobs:
             /opt/hostedtoolcache/flutter/
             app/.dart_tool/
       - name: Install Flutter
-        uses: subosito/flutter-action@v1
+        uses: subosito/flutter-action@v2
         with:
           channel: 'beta'
       - name: Check "lib" Formatting
@@ -120,7 +120,7 @@ jobs:
             app/lib/**/*.i18n.dart
             app/test/**/*.i18n.dart
       - name: Install Flutter
-        uses: subosito/flutter-action@v1
+        uses: subosito/flutter-action@v2
         with:
           channel: 'beta'
       - name: Run Analysis
