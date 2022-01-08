@@ -1,3 +1,1 @@
-abstract class Opaque {
-
-}
+abstract class Opaque {}
