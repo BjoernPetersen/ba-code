@@ -1,5 +1,5 @@
 import 'package:opaque/src/oprf/prime_order_group.dart';
-import 'package:opaque/src/oprf/util.dart';
+import 'package:opaque/src/util.dart';
 import 'package:test/test.dart';
 
 void main() {

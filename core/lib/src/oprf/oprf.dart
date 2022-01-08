@@ -1,5 +1,5 @@
 import 'package:opaque/src/oprf/oprf_impl.dart';
-import 'package:opaque/src/oprf/util.dart';
+import 'package:opaque/src/util.dart';
 
 typedef PublicInput = Bytes;
 

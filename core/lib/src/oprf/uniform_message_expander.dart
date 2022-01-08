@@ -1,6 +1,6 @@
 import 'package:cryptography/cryptography.dart';
-import 'package:opaque/src/oprf/data_conversion.dart';
-import 'package:opaque/src/oprf/util.dart';
+import 'package:opaque/src/data_conversion.dart';
+import 'package:opaque/src/util.dart';
 
 class UniformMessageExpander {
   final HashAlgorithm _hasher;

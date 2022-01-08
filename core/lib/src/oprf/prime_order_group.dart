@@ -1,8 +1,8 @@
 import 'dart:math';
 
-import 'package:opaque/src/oprf/data_conversion.dart';
+import 'package:opaque/src/data_conversion.dart';
 import 'package:opaque/src/oprf/uniform_message_expander.dart';
-import 'package:opaque/src/oprf/util.dart';
+import 'package:opaque/src/util.dart';
 import 'package:pointycastle/api.dart';
 import 'package:pointycastle/ecc/api.dart';
 import 'package:pointycastle/ecc/curves/secp256r1.dart';

@@ -1,6 +1,6 @@
 import 'package:convert/convert.dart';
 import 'package:opaque/src/oprf/uniform_message_expander.dart';
-import 'package:opaque/src/oprf/util.dart';
+import 'package:opaque/src/util.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 

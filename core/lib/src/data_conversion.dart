@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:opaque/src/oprf/util.dart';
+import 'package:opaque/src/util.dart';
 
 final _base = BigInt.from(256);
 

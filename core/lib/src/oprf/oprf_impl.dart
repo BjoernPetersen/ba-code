@@ -1,7 +1,7 @@
 import 'package:cryptography/cryptography.dart' as crypto;
-import 'package:opaque/src/oprf/data_conversion.dart';
+import 'package:opaque/src/data_conversion.dart';
 import 'package:opaque/src/oprf/prime_order_group.dart';
-import 'package:opaque/src/oprf/util.dart';
+import 'package:opaque/src/util.dart';
 import 'package:pointycastle/ecc/api.dart';
 
 import 'oprf.dart';

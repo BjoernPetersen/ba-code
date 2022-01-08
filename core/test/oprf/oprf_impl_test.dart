@@ -1,16 +1,16 @@
-import 'package:convert/convert.dart';
 import 'package:opaque/core.dart';
 import 'package:opaque/src/oprf/oprf_impl.dart';
 import 'package:opaque/src/oprf/prime_order_group.dart';
-import 'package:opaque/src/oprf/util.dart';
 import 'package:test/test.dart';
+
+import '../util.dart';
 
 void main() {
   group('p256', () {
     final oprf = OprfImpl.p256();
-    final seed = hexDecode(
-      'a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3',
-    );
+    final seed =
+        'a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3'
+            .hexDecode();
     final skSm =
         'c15d9e9ab36d495d9d62954db6aafe06d3edabf41600d58f9be0737af2719e97';
     testVectors(oprf, seed, skSm, p256Vectors);
@@ -18,9 +18,9 @@ void main() {
 
   group('p384', () {
     final oprf = OprfImpl.p384();
-    final seed = hexDecode(
-      'a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3',
-    );
+    final seed =
+        'a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3'
+            .hexDecode();
     final skSm =
         'b9ff42e68ef6f8eaa3b4d15d15ceb6f3f36b9dc332a3473d64840fc7b44626c6e70336bdecbe01d9c512b7e7d7e6af21';
     testVectors(oprf, seed, skSm, p384Vectors);
@@ -37,7 +37,7 @@ void testVectors(
   group('deriveKey', () {
     test('test vector key', () async {
       final keyPair = await oprf.deriveKeyPair(seed);
-      expect(keyPair.private.asString(), skSm);
+      expect(keyPair.private.hexEncode(), skSm);
     });
   });
 
@@ -51,8 +51,8 @@ void testVectors(
           );
           expect(blinds.blind, vector.blind);
           expect(
-            blinds.blindedElement.asString(),
-            vector.blindedElement.asString(),
+            blinds.blindedElement.hexEncode(),
+            vector.blindedElement.hexEncode(),
           );
         });
       }
@@ -75,7 +75,7 @@ void testVectors(
               domainSeparator: oprf.contextString,
             );
             final expected = oprf.group.serializeElement(hashedToGroup);
-            expect(unblinded.asString(), expected.asString());
+            expect(unblinded.hexEncode(), expected.hexEncode());
           });
         }
       },
@@ -91,8 +91,8 @@ void testVectors(
           );
 
           expect(
-            evaluatedElement.asString(),
-            vector.evaluationElement.asString(),
+            evaluatedElement.hexEncode(),
+            vector.evaluationElement.hexEncode(),
           );
         });
       }
@@ -107,21 +107,15 @@ void testVectors(
             evaluatedElement: vector.evaluationElement,
             info: vector.info,
           );
-          expect(output.asString(), vector.output.asString());
+          expect(output.hexEncode(), vector.output.hexEncode());
         });
       }
     });
   });
 }
 
-extension on Bytes {
-  String asString() {
-    return hex.encode(this);
-  }
-}
-
 Bytes decodeKey(PrimeOrderGroup primeGroup, String key) {
-  final bytes = hexDecode(key);
+  final bytes = key.hexDecode();
   return bytes;
   // TODO: should be deserialized here?
   //return primeGroup.deserializeScalar(bytes);
@@ -129,10 +123,6 @@ Bytes decodeKey(PrimeOrderGroup primeGroup, String key) {
 
 BigInt parseHexInt(String s) {
   return BigInt.parse(s, radix: 16);
-}
-
-Bytes hexDecode(String s) {
-  return Bytes.fromList(hex.decode(s));
 }
 
 class Vector {
@@ -152,12 +142,12 @@ class Vector {
     required String evaluationElement,
     required String output,
   })  : name = input,
-        input = hexDecode(input),
-        info = hexDecode(info),
-        blind = hexDecode(blind),
-        blindedElement = hexDecode(blindedElement),
-        evaluationElement = hexDecode(evaluationElement),
-        output = hexDecode(output);
+        input = input.hexDecode(),
+        info = info.hexDecode(),
+        blind = blind.hexDecode(),
+        blindedElement = blindedElement.hexDecode(),
+        evaluationElement = evaluationElement.hexDecode(),
+        output = output.hexDecode();
 }
 
 final List<Vector> p256Vectors = [

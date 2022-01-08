@@ -1,4 +1,4 @@
-import 'package:opaque/src/oprf/data_conversion.dart';
+import 'package:opaque/src/data_conversion.dart';
 import 'package:test/test.dart';
 
 void main() {
