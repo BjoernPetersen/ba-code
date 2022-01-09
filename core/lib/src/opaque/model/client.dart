@@ -21,5 +21,3 @@ class CleartextCredentials {
     required this.clientIdentity,
   });
 }
-
-
