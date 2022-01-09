@@ -36,7 +36,7 @@ void testVectors(
   final secretKey = decodeKey(oprf.group, skSm);
   group('deriveKey', () {
     test('test vector key', () async {
-      final keyPair = await oprf.deriveKeyPair(seed);
+      final keyPair = await oprf.deriveKeyPair(seed: seed);
       expect(keyPair.private.hexEncode(), skSm);
     });
   });

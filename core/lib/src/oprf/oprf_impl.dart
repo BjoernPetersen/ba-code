@@ -62,10 +62,13 @@ class OprfImpl extends Oprf {
   }
 
   @override
-  Future<KeyPair> deriveKeyPair(Bytes seed) async {
+  Future<KeyPair> deriveKeyPair({
+    required Bytes seed,
+    Bytes? domainSeparator,
+  }) async {
     final secret = await group.hashToScalar(
       data: seed,
-      domainSeparator: contextString,
+      domainSeparator: domainSeparator ?? contextString,
     );
     final publicKey = group.scalarBaseMult(secret);
     return KeyPair(

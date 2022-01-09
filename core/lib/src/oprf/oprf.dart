@@ -42,5 +42,11 @@ abstract class Oprf {
     required PublicInput info,
   });
 
-  Future<KeyPair> deriveKeyPair(Bytes seed);
+  /// Derive a keypair from the given pseudorandom [seed].
+  ///
+  /// If not custom [domainSeparator] is given, the usual contextString is used.
+  Future<KeyPair> deriveKeyPair({
+    required Bytes seed,
+    Bytes? domainSeparator,
+  });
 }
