@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:cryptography/cryptography.dart' as crypto;
 import 'package:opaque/src/model/model.dart';
 import 'package:opaque/src/opaque/key_derivation.dart';
-import 'package:opaque/src/opaque/key_recovery.dart' show KeyRecovery;
+import 'package:opaque/src/opaque/key_recovery.dart';
 import 'package:opaque/src/opaque/mhf.dart';
 import 'package:opaque/src/oprf/oprf.dart';
 import 'package:opaque/src/util.dart';
