@@ -5,10 +5,13 @@ import 'package:opaque/src/model/model.dart';
 import 'package:opaque/src/opaque/key_derivation.dart';
 import 'package:opaque/src/opaque/key_recovery.dart';
 import 'package:opaque/src/opaque/mhf.dart';
+import 'package:opaque/src/opaque/offline_registration.dart';
 import 'package:opaque/src/oprf/oprf.dart';
 import 'package:opaque/src/util.dart';
 
 export 'package:opaque/src/opaque/key_recovery.dart' hide KeyRecoveryImpl;
+export 'package:opaque/src/opaque/offline_registration.dart'
+    hide OfflineRegistrationImpl;
 
 class Opaque {
   final Suite suite;
@@ -24,6 +27,13 @@ class Opaque {
     return result;
   }
 
+  Future<KeyPair> deriveKeyPair(Bytes seed) async {
+    return await suite.oprf.deriveKeyPair(
+      seed: seed,
+      domainSeparator: 'OPAQUE-DeriveKeyPair'.asciiBytes(),
+    );
+  }
+
   Future<KeyPair> deriveAuthKeyPair(Bytes seed) async {
     return await suite.oprf.deriveKeyPair(
       seed: seed,
@@ -32,6 +42,8 @@ class Opaque {
   }
 
   KeyRecovery get keyRecovery => KeyRecoveryImpl(this);
+
+  OfflineRegistration get offlineRegistration => OfflineRegistrationImpl(this);
 }
 
 class Suite {
