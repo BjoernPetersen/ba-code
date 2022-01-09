@@ -84,8 +84,3 @@ class UniformMessageExpander {
     return Bytes.fromList(result).sublist(0, _lengthInBytes);
   }
 }
-
-enum DigestAlgo {
-  sha256,
-  sha384,
-}

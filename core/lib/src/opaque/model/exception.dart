@@ -1,0 +1,1 @@
+class KeyRecoveryError implements Exception {}

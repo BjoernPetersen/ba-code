@@ -1,5 +1,5 @@
 import 'package:opaque/src/util.dart';
-import 'package:opaque/src/opaque/model/common.dart';
+
 export 'package:opaque/src/opaque/model/common.dart';
 
 class CleartextCredentials {
@@ -20,4 +20,23 @@ class CleartextCredentials {
     required this.serverIdentity,
     required this.clientIdentity,
   });
+
+  factory CleartextCredentials.create({
+    required Bytes serverPublicKey,
+    required Bytes clientPublicKey,
+    Bytes? serverIdentity,
+    Bytes? clientIdentity,
+  }) {
+    return CleartextCredentials(
+      serverPublicKey: serverPublicKey,
+      serverIdentity: serverIdentity ?? serverPublicKey,
+      clientIdentity: clientIdentity ?? clientPublicKey,
+    );
+  }
+
+  List<Bytes> asBytesList() => [
+        serverPublicKey,
+        serverIdentity,
+        clientIdentity,
+      ];
 }

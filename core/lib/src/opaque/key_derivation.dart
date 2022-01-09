@@ -18,6 +18,9 @@ abstract class KeyDerivationFunction {
   /// The output size of the Extract() function in bytes.
   int get outputSize;
 
+  /// Calculate a MAC with the underlying MAC implementation.
+  Future<Bytes> mac({required Bytes key, required Bytes msg});
+
   /// Extract a pseudorandom key of fixed length [outputSize] bytes from
   /// input keying material [inputMaterial] and an optional byte string [salt].
   Future<Bytes> extract({required Bytes inputMaterial, Bytes? salt});
@@ -32,25 +35,31 @@ abstract class KeyDerivationFunction {
 }
 
 class _HkdfImpl implements KeyDerivationFunction {
-  // We're exposing the cryptographic package's Hmac here, because
+  // We're using the cryptographic package's Hmac here, because
   // the pointycastle version of the interface is an excellent footgun.
-  final crypto.Hmac mac;
+  final crypto.Hmac _mac;
   final Digest _pointySha;
 
   _HkdfImpl.sha256()
-      : mac = crypto.Hmac.sha256(),
+      : _mac = crypto.Hmac.sha256(),
         _pointySha = SHA256Digest();
 
   _HkdfImpl.sha384()
-      : mac = crypto.Hmac(crypto.Sha384()),
+      : _mac = crypto.Hmac(crypto.Sha384()),
         _pointySha = SHA384Digest();
 
   _HkdfImpl.sha512()
-      : mac = crypto.Hmac.sha512(),
+      : _mac = crypto.Hmac.sha512(),
         _pointySha = SHA512Digest();
 
   @override
   int get outputSize => _pointySha.digestSize;
+
+  @override
+  Future<Bytes> mac({required Bytes key, required Bytes msg}) async {
+    final mac = await _mac.calculateMac(msg, secretKey: crypto.SecretKey(key));
+    return Uint8List.fromList(mac.bytes);
+  }
 
   @override
   Future<Bytes> extract({required Bytes inputMaterial, Bytes? salt}) async {
