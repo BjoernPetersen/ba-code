@@ -1,12 +1,14 @@
 import 'dart:math';
 
 import 'package:cryptography/cryptography.dart' as crypto;
-import 'package:cryptography/helpers.dart';
+import 'package:opaque/src/model/model.dart';
 import 'package:opaque/src/opaque/key_derivation.dart';
+import 'package:opaque/src/opaque/key_recovery.dart' show KeyRecovery;
 import 'package:opaque/src/opaque/mhf.dart';
-import 'package:opaque/src/opaque/model/model.dart';
 import 'package:opaque/src/oprf/oprf.dart';
 import 'package:opaque/src/util.dart';
+
+export 'package:opaque/src/opaque/key_recovery.dart' hide KeyRecoveryImpl;
 
 class Opaque {
   final Suite suite;
@@ -29,118 +31,7 @@ class Opaque {
     );
   }
 
-  /// Clients create an Envelope at registration with the function Store.
-  Future<StoreResult> store({
-    required Bytes randomizedPassword,
-    required Bytes serverPublicKey,
-    Bytes? serverIdentity,
-    Bytes? clientIdentity,
-  }) async {
-    final envelopeNonce = await randomSeed(suite.constants.Nn);
-
-    final maskingKey = await suite.kdf.expand(
-      key: randomizedPassword,
-      info: 'MaskingKey'.asciiBytes(),
-      l: suite.constants.Nh,
-    );
-    final authKey = await suite.kdf.expand(
-      key: randomizedPassword,
-      info: concatBytes([envelopeNonce, 'AuthKey'.asciiBytes()]),
-      l: suite.constants.Nh,
-    );
-    final exportKey = await suite.kdf.expand(
-      key: randomizedPassword,
-      info: concatBytes([envelopeNonce, 'ExportKey'.asciiBytes()]),
-      l: suite.constants.Nh,
-    );
-    final seed = await suite.kdf.expand(
-      key: randomizedPassword,
-      info: concatBytes([envelopeNonce, 'PrivateKey'.asciiBytes()]),
-      l: suite.constants.Nseed,
-    );
-
-    final clientPublicKey = (await deriveAuthKeyPair(seed)).public;
-    final cleartextCreds = CleartextCredentials.create(
-      serverPublicKey: serverPublicKey,
-      clientPublicKey: clientPublicKey,
-      serverIdentity: serverIdentity,
-      clientIdentity: clientIdentity,
-    );
-    final authTag = await suite.kdf.mac(
-      key: authKey,
-      msg: concatBytes([
-        envelopeNonce,
-        ...cleartextCreds.asBytesList(),
-      ]),
-    );
-    final envelope = Envelope(
-      nonce: envelopeNonce,
-      authTag: authTag,
-    );
-
-    return StoreResult(
-      envelope: envelope,
-      clientPublicKey: clientPublicKey,
-      maskingKey: maskingKey,
-      exportKey: exportKey,
-    );
-  }
-
-  /// Clients recover their Envelope during login with the Recover function.
-  Future<RecoverResult> recover({
-    required Bytes randomizedPassword,
-    required Bytes serverPublicKey,
-    required Envelope envelope,
-    Bytes? serverIdentity,
-    Bytes? clientIdentity,
-  }) async {
-    final authKey = await suite.kdf.expand(
-      key: randomizedPassword,
-      info: concatBytes([
-        envelope.nonce,
-        'AuthKey'.asciiBytes(),
-      ]),
-      l: suite.constants.Nh,
-    );
-    final exportKey = await suite.kdf.expand(
-      key: randomizedPassword,
-      info: concatBytes([
-        envelope.nonce,
-        'ExportKey'.asciiBytes(),
-      ]),
-      l: suite.constants.Nh,
-    );
-    final seed = await suite.kdf.expand(
-      key: randomizedPassword,
-      info: concatBytes([
-        envelope.nonce,
-        'PrivateKey'.asciiBytes(),
-      ]),
-      l: suite.constants.Nseed,
-    );
-    final clientKeyPair = await deriveAuthKeyPair(seed);
-    final cleartextCreds = CleartextCredentials.create(
-      serverPublicKey: serverPublicKey,
-      clientPublicKey: clientKeyPair.public,
-      serverIdentity: serverIdentity,
-      clientIdentity: clientIdentity,
-    );
-    final expectedTag = await suite.kdf.mac(
-      key: authKey,
-      msg: concatBytes([
-        envelope.nonce,
-        ...cleartextCreds.asBytesList(),
-      ]),
-    );
-
-    if (!constantTimeBytesEquality.equals(envelope.authTag, expectedTag)) {
-      throw KeyRecoveryError();
-    }
-    return RecoverResult(
-      clientPrivateKey: clientKeyPair.private,
-      exportKey: exportKey,
-    );
-  }
+  KeyRecovery get keyRecovery => KeyRecoveryImpl(this);
 }
 
 class Suite {

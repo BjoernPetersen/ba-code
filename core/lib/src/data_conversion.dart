@@ -1,11 +1,9 @@
-import 'dart:typed_data';
-
 import 'package:opaque/src/util.dart';
 
 final _base = BigInt.from(256);
 
 /// https://datatracker.ietf.org/doc/html/rfc8017#section-4.1
-Uint8List intToBytes(BigInt number, int length) {
+Bytes intToBytes(BigInt number, int length) {
   if (number >= _base.pow(length)) {
     throw ArgumentError.value(
       number,
@@ -15,7 +13,7 @@ Uint8List intToBytes(BigInt number, int length) {
   }
 
   var remaining = number;
-  final result = Uint8List(length);
+  final result = Bytes(length);
   for (int i = length - 1; remaining != BigInt.zero && i >= 0; i -= 1) {
     result[i] = (remaining % _base).toInt();
     remaining = remaining ~/ _base;

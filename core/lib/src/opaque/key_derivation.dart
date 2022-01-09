@@ -1,12 +1,12 @@
 import 'dart:typed_data';
 
 import 'package:cryptography/cryptography.dart' as crypto;
-import 'package:opaque/src/util.dart';
 import 'package:pointycastle/digests/sha256.dart';
 import 'package:pointycastle/digests/sha384.dart';
 import 'package:pointycastle/digests/sha512.dart';
 import 'package:pointycastle/key_derivators/hkdf.dart';
 import 'package:pointycastle/pointycastle.dart';
+import 'package:opaque/src/model/model.dart';
 
 abstract class KeyDerivationFunction {
   factory KeyDerivationFunction.hkdfSha256() => _HkdfImpl.sha256();

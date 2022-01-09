@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-typedef Bytes = Uint8List;
+import 'package:opaque/src/model/model.dart';
+
+export 'package:opaque/src/model/model.dart' show Bytes;
 
 Bytes concatBytes(List<Bytes> byteLists) {
   final builder = BytesBuilder(copy: false);

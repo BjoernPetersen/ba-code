@@ -1,6 +1,8 @@
-import 'package:opaque/src/util.dart';
+import 'dart:typed_data';
 
-export 'package:opaque/src/opaque/model/exception.dart';
+export 'package:opaque/src/model/exception.dart';
+
+typedef Bytes = Uint8List;
 
 class Constants {
   // ignore: non_constant_identifier_names
@@ -144,38 +146,4 @@ class AuthFinish {
   final Bytes clientMac;
 
   AuthFinish({required this.clientMac});
-}
-
-class StoreResult {
-  /// the client's [Envelope] structure.
-  final Envelope envelope;
-
-  /// the client's AKE public key.
-  final Bytes clientPublicKey;
-
-  /// a key used by the server to encrypt the envelope during login.
-  final Bytes maskingKey;
-
-  /// an additional client key.
-  final Bytes exportKey;
-
-  StoreResult({
-    required this.envelope,
-    required this.clientPublicKey,
-    required this.maskingKey,
-    required this.exportKey,
-  });
-}
-
-class RecoverResult {
-  /// The encoded client private key for the AKE protocol.
-  final Bytes clientPrivateKey;
-
-  /// an additional client key.
-  final Bytes exportKey;
-
-  RecoverResult({
-    required this.clientPrivateKey,
-    required this.exportKey,
-  });
 }

@@ -1,7 +1,6 @@
-import 'package:opaque/src/opaque/model/common.dart';
-import 'package:opaque/src/util.dart';
+import 'package:opaque/src/model/common.dart';
 
-export 'package:opaque/src/opaque/model/common.dart';
+export 'package:opaque/src/model/common.dart';
 
 class RegistrationRecord {
   /// The client's encoded public key, corresponding to the private

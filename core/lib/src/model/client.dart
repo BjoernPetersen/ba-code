@@ -1,6 +1,5 @@
-import 'package:opaque/src/util.dart';
-
-export 'package:opaque/src/opaque/model/common.dart';
+import 'package:opaque/src/model/common.dart';
+export 'package:opaque/src/model/common.dart';
 
 class CleartextCredentials {
   /// The encoded server public key for the AKE protocol.
