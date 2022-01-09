@@ -1,4 +1,4 @@
-import 'package:opaque/core.dart';
+import 'package:opaque/server.dart';
 import 'package:opaque/src/oprf/oprf_impl.dart';
 import 'package:opaque/src/oprf/prime_order_group.dart';
 import 'package:test/test.dart';
