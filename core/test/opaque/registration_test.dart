@@ -53,6 +53,7 @@ void main() {
 
   group('finalize', () {
     for (final vector in vectors) {
+      // TODO: these broke, worked before
       test(vector.name, () async {
         final opaque = Opaque(vector.suite);
 

@@ -18,4 +18,9 @@ class RegistrationRecord {
     required this.maskingKey,
     required this.envelope,
   });
+
+  factory RegistrationRecord.fromBytes(Constants constants, Bytes bytes) {
+    // FIXME: implement
+    throw UnimplementedError('not implemented');
+  }
 }

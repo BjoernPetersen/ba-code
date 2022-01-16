@@ -1,7 +1,7 @@
 import 'package:opaque/src/model/model.dart';
-import 'package:opaque/src/opaque/three_dh.dart';
 import 'package:opaque/src/opaque/credential_retrieval.dart';
 import 'package:opaque/src/opaque/opaque.dart';
+import 'package:opaque/src/opaque/three_dh.dart';
 
 class ClientFinishResult {
   final KE3 ke3;
@@ -16,7 +16,12 @@ class ClientFinishResult {
 }
 
 abstract class ClientOnlineAke {
-  Future<KE1> init({required Bytes password});
+  Future<KE1> init({
+    required Bytes password,
+    Bytes? testBlind,
+    Bytes? testNonce,
+    Bytes? testKeyshare,
+  });
 
   Future<ClientFinishResult> finish({
     required Bytes clientIdentity,
@@ -38,12 +43,23 @@ class ClientOnlineAkeImpl implements ClientOnlineAke {
   Suite get suite => opaque.suite;
 
   @override
-  Future<KE1> init({required Bytes password}) async {
+  Future<KE1> init({
+    required Bytes password,
+    Bytes? testBlind,
+    Bytes? testNonce,
+    Bytes? testKeyshare,
+  }) async {
     final result = await _credentialRetrieval.createCredentialRequest(
       password: password,
+      blind: testBlind,
     );
     _state.blind = result.blind;
-    return await _threeDh.clientStart(state: _state, request: result.request);
+    return await _threeDh.clientStart(
+      state: _state,
+      request: result.request,
+      testClientNonce: testNonce,
+      testClientKeyshare: testKeyshare,
+    );
   }
 
   @override
@@ -115,6 +131,9 @@ class ServerOnlineAkeImpl implements ServerOnlineAke {
     required Bytes oprfSeed,
     required KE1 ke1,
     required Bytes clientIdentity,
+    Bytes? testMaskingNonce,
+    Bytes? testNonce,
+    KeyPair? testKeyPair,
   }) async {
     final response = await _credentialRetrieval.createCredentialResponse(
       request: ke1.credentialRequest,
@@ -122,16 +141,18 @@ class ServerOnlineAkeImpl implements ServerOnlineAke {
       record: record,
       credentialIdentifier: credentialIdentifier,
       oprfSeed: oprfSeed,
+      testMaskingNonce: testMaskingNonce,
     );
     return await _threeDh.serverResponse(
       state: _state,
-      // TODO is this correct?
-      serverIdentity: serverIdentity ?? Bytes(0),
+      serverIdentity: serverIdentity ?? serverPublicKey,
       serverPrivateKey: serverPrivateKey,
       clientIdentity: clientIdentity,
       clientPublicKey: record.clientPublicKey,
       ke1: ke1,
       credentialResponse: response,
+      testServerNonce: testNonce,
+      testServerKeyPair: testKeyPair,
     );
   }
 

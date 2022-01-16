@@ -17,6 +17,19 @@ class KE1 {
         ...credentialRequest.asBytesList(),
         ...authInit.asBytesList(),
       ];
+
+  factory KE1.fromBytes(Constants constants, Bytes bytes) {
+    final authSize = constants.Nn + constants.Npk;
+    return KE1(
+      credentialRequest: CredentialRequest(
+        data: bytes.sublist(0, bytes.length - authSize),
+      ),
+      authInit: AuthInit.fromBytes(
+        constants,
+        bytes.sublist(bytes.length - authSize),
+      ),
+    );
+  }
 }
 
 class KE2 {
@@ -89,14 +102,17 @@ class ThreeDiffieHellman {
   Future<KE1> clientStart({
     required ClientState state,
     required CredentialRequest request,
+    Bytes? testClientNonce,
+    Bytes? testClientKeyshare,
   }) async {
-    final clientNonce = await opaque.randomSeed(suite.constants.Nn);
+    final clientNonce =
+        testClientNonce ?? await opaque.randomSeed(suite.constants.Nn);
     final keyPair = await opaque.generateAuthKeyPair();
     final ke1 = KE1(
       credentialRequest: request,
       authInit: AuthInit(
         clientNonce: clientNonce,
-        clientKeyshare: keyPair.public,
+        clientKeyshare: testClientKeyshare ?? keyPair.public,
       ),
     );
 
@@ -157,9 +173,12 @@ class ThreeDiffieHellman {
     required Bytes clientPublicKey,
     required KE1 ke1,
     required CredentialResponse credentialResponse,
+    required Bytes? testServerNonce,
+    required KeyPair? testServerKeyPair,
   }) async {
-    final serverNonce = await opaque.randomSeed(suite.constants.Nn);
-    final keyPair = await opaque.generateAuthKeyPair();
+    final serverNonce =
+        testServerNonce ?? await opaque.randomSeed(suite.constants.Nn);
+    final keyPair = testServerKeyPair ?? await opaque.generateAuthKeyPair();
     final ke2 = KE2(
       authResponse: AuthResponse(
         serverMac: Bytes(0),

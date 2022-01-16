@@ -17,6 +17,7 @@ export 'package:opaque/src/opaque/offline_registration.dart'
 export 'package:opaque/src/opaque/online_ake.dart'
     hide ClientOnlineAkeImpl, ServerOnlineAkeImpl;
 export 'package:opaque/src/opaque/state.dart';
+export 'package:opaque/src/oprf/oprf.dart' show KeyPair;
 
 class Opaque {
   final Suite suite;

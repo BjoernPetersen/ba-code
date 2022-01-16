@@ -30,8 +30,12 @@ class CredentialRetrieval {
 
   Future<CredentialRequestResult> createCredentialRequest({
     required Bytes password,
+    Bytes? blind,
   }) async {
-    final blindPair = await suite.oprf.blind(input: password);
+    final blindPair = await suite.oprf.blind(
+      input: password,
+      blind: blind,
+    );
     final request = CredentialRequest(data: blindPair.blindedElement);
     return CredentialRequestResult(blind: blindPair.blind, request: request);
   }
@@ -42,6 +46,7 @@ class CredentialRetrieval {
     required RegistrationRecord record,
     required Bytes credentialIdentifier,
     required Bytes oprfSeed,
+    Bytes? testMaskingNonce,
   }) async {
     final seed = await suite.kdf.expand(
       key: oprfSeed,
@@ -54,7 +59,8 @@ class CredentialRetrieval {
       blindedElement: request.data,
       info: Bytes(0),
     );
-    final maskingNonce = await opaque.randomSeed(suite.constants.Nn);
+    final maskingNonce =
+        testMaskingNonce ?? await opaque.randomSeed(suite.constants.Nn);
     // TODO: this could be calculated in constants
     // ignore: non_constant_identifier_names
     final Ne = record.envelope

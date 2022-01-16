@@ -145,6 +145,15 @@ class AuthInit {
   });
 
   List<Bytes> asBytesList() => [clientNonce, clientKeyshare];
+
+  factory AuthInit.fromBytes(Constants constants, Bytes bytes) {
+    final clientNonce = bytes.sublist(0, constants.Nn);
+    final clientKeyshare = bytes.sublist(
+      constants.Nn,
+      constants.Nn + constants.Npk,
+    );
+    return AuthInit(clientNonce: clientNonce, clientKeyshare: clientKeyshare);
+  }
 }
 
 class AuthResponse {
