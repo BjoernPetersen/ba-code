@@ -1,3 +1,4 @@
+import 'package:convert/convert.dart';
 import 'package:opaque/src/model/model.dart';
 import 'package:opaque/src/opaque/opaque.dart';
 import 'package:opaque/src/util.dart';
@@ -25,6 +26,7 @@ class FinalizeRequestResult {
 abstract class OfflineRegistration {
   Future<CreateRegistrationRequestResult> createRegistrationRequest({
     required Bytes password,
+    Bytes? blind,
   });
 
   Future<RegistrationResponse> createRegistrationResponse({
@@ -53,8 +55,12 @@ class OfflineRegistrationImpl implements OfflineRegistration {
   @override
   Future<CreateRegistrationRequestResult> createRegistrationRequest({
     required Bytes password,
+    Bytes? blind,
   }) async {
-    final blindPair = await suite.oprf.blind(input: password);
+    final blindPair = await suite.oprf.blind(
+      input: password,
+      blind: blind,
+    );
     final request = RegistrationRequest(data: blindPair.blindedElement);
     return CreateRegistrationRequestResult(
       request: request,

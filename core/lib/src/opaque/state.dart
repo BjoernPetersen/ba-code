@@ -1,6 +1,6 @@
 import 'package:opaque/src/util.dart';
 
-import '3dh.dart';
+import 'three_dh.dart';
 
 abstract class ClientState {
   abstract Bytes blind;

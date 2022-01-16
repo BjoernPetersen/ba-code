@@ -1,5 +1,5 @@
 import 'package:opaque/src/model/model.dart';
-import 'package:opaque/src/opaque/3dh.dart';
+import 'package:opaque/src/opaque/three_dh.dart';
 import 'package:opaque/src/opaque/credential_retrieval.dart';
 import 'package:opaque/src/opaque/opaque.dart';
 

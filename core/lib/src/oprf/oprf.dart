@@ -30,7 +30,10 @@ abstract class Oprf {
     required Bytes serializedElement,
   });
 
-  Future<BlindPair> blind({required Bytes input});
+  Future<BlindPair> blind({
+    required Bytes input,
+    Bytes? blind,
+  });
 
   Future<Bytes> evaluate({
     required Bytes privateKey,
