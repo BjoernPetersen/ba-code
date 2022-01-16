@@ -74,3 +74,72 @@ class ClientOnlineAkeImpl implements ClientOnlineAke {
     );
   }
 }
+
+abstract class ServerOnlineAke {
+  Future<KE2> init({
+    required Bytes? serverIdentity,
+    required Bytes serverPrivateKey,
+    required Bytes serverPublicKey,
+    required RegistrationRecord record,
+    required Bytes credentialIdentifier,
+    required Bytes oprfSeed,
+    required KE1 ke1,
+    required Bytes clientIdentity,
+  });
+
+  Future<Bytes> serverFinish({
+    required ServerState state,
+    required KE3 ke3,
+  });
+}
+
+class ServerOnlineAkeImpl implements ServerOnlineAke {
+  final Opaque opaque;
+  final ServerState _state;
+  final CredentialRetrieval _credentialRetrieval;
+  final ThreeDiffieHellman _threeDh;
+
+  ServerOnlineAkeImpl(this.opaque, this._state)
+      : _credentialRetrieval = CredentialRetrieval(opaque),
+        _threeDh = ThreeDiffieHellman(opaque);
+
+  Suite get suite => opaque.suite;
+
+  @override
+  Future<KE2> init({
+    required Bytes? serverIdentity,
+    required Bytes serverPrivateKey,
+    required Bytes serverPublicKey,
+    required RegistrationRecord record,
+    required Bytes credentialIdentifier,
+    required Bytes oprfSeed,
+    required KE1 ke1,
+    required Bytes clientIdentity,
+  }) async {
+    final response = await _credentialRetrieval.createCredentialResponse(
+      request: ke1.credentialRequest,
+      serverPublicKey: serverPublicKey,
+      record: record,
+      credentialIdentifier: credentialIdentifier,
+      oprfSeed: oprfSeed,
+    );
+    return await _threeDh.serverResponse(
+      state: _state,
+      // TODO is this correct?
+      serverIdentity: serverIdentity ?? Bytes(0),
+      serverPrivateKey: serverPrivateKey,
+      clientIdentity: clientIdentity,
+      clientPublicKey: record.clientPublicKey,
+      ke1: ke1,
+      credentialResponse: response,
+    );
+  }
+
+  @override
+  Future<Bytes> serverFinish({
+    required ServerState state,
+    required KE3 ke3,
+  }) {
+    return _threeDh.serverFinish(state: state, ke3: ke3);
+  }
+}

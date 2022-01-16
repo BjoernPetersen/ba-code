@@ -14,7 +14,8 @@ import 'package:opaque/src/util.dart';
 export 'package:opaque/src/opaque/key_recovery.dart' hide KeyRecoveryImpl;
 export 'package:opaque/src/opaque/offline_registration.dart'
     hide OfflineRegistrationImpl;
-export 'package:opaque/src/opaque/online_ake.dart' hide OnlineAkeImpl;
+export 'package:opaque/src/opaque/online_ake.dart'
+    hide ClientOnlineAkeImpl, ServerOnlineAkeImpl;
 export 'package:opaque/src/opaque/state.dart';
 
 class Opaque {
@@ -56,6 +57,9 @@ class Opaque {
 
   ClientOnlineAke getClientAke(ClientState state) =>
       ClientOnlineAkeImpl(this, state);
+
+  ServerOnlineAke getServerAke(ServerState state) =>
+      ServerOnlineAkeImpl(this, state);
 }
 
 Future<Bytes> Function(List<int>) _simpleHash(crypto.HashAlgorithm cryptoHash) {
