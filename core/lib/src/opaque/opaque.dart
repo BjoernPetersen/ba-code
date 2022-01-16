@@ -6,12 +6,16 @@ import 'package:opaque/src/opaque/key_derivation.dart';
 import 'package:opaque/src/opaque/key_recovery.dart';
 import 'package:opaque/src/opaque/mhf.dart';
 import 'package:opaque/src/opaque/offline_registration.dart';
+import 'package:opaque/src/opaque/online_ake.dart';
+import 'package:opaque/src/opaque/state.dart';
 import 'package:opaque/src/oprf/oprf.dart';
 import 'package:opaque/src/util.dart';
 
 export 'package:opaque/src/opaque/key_recovery.dart' hide KeyRecoveryImpl;
 export 'package:opaque/src/opaque/offline_registration.dart'
     hide OfflineRegistrationImpl;
+export 'package:opaque/src/opaque/online_ake.dart' hide OnlineAkeImpl;
+export 'package:opaque/src/opaque/state.dart';
 
 class Opaque {
   final Suite suite;
@@ -25,6 +29,11 @@ class Opaque {
       result[i] = random.nextInt(256);
     }
     return result;
+  }
+
+  Future<KeyPair> generateAuthKeyPair() async {
+    final seed = await randomSeed(suite.constants.Nok);
+    return suite.oprf.deriveKeyPair(seed: seed);
   }
 
   Future<KeyPair> deriveKeyPair(Bytes seed) async {
@@ -44,22 +53,29 @@ class Opaque {
   KeyRecovery get keyRecovery => KeyRecoveryImpl(this);
 
   OfflineRegistration get offlineRegistration => OfflineRegistrationImpl(this);
+
+  ClientOnlineAke getClientAke(ClientState state) =>
+      ClientOnlineAkeImpl(this, state);
+}
+
+Future<Bytes> Function(List<int>) _simpleHash(crypto.HashAlgorithm cryptoHash) {
+  return (input) async => Bytes.fromList((await cryptoHash.hash(input)).bytes);
 }
 
 class Suite {
   final Oprf oprf;
-  final crypto.HashAlgorithm hash;
+  final Future<Bytes> Function(List<int>) hash;
   final MemoryHardFunction mhf;
   final KeyDerivationFunction kdf;
   final Constants constants;
 
   Suite({
     required this.oprf,
-    required this.hash,
+    required crypto.HashAlgorithm hash,
     required this.mhf,
     required this.kdf,
     required this.constants,
-  });
+  }) : hash = _simpleHash(hash);
 
   factory Suite.sha256p256() {
     return Suite(

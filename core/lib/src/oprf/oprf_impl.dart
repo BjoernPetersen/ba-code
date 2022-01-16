@@ -31,6 +31,17 @@ class OprfImpl extends Oprf {
   }
 
   @override
+  Future<Bytes> multiply({
+    required Bytes serializedScalar,
+    required Bytes serializedElement,
+  }) async {
+    final element = group.deserializeElement(serializedElement);
+    final scalar = group.deserializeScalar(serializedScalar);
+    final multiplied = element * scalar.toBigInteger();
+    return group.serializeElement(multiplied!);
+  }
+
+  @override
   Future<BlindPair> blind({required Bytes input, Bytes? blind}) async {
     final ECFieldElement effectiveBlind;
     if (blind == null) {

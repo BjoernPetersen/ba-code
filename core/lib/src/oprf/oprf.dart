@@ -25,6 +25,11 @@ abstract class Oprf {
 
   factory Oprf.p384() => OprfImpl.p384();
 
+  Future<Bytes> multiply({
+    required Bytes serializedScalar,
+    required Bytes serializedElement,
+  });
+
   Future<BlindPair> blind({required Bytes input});
 
   Future<Bytes> evaluate({

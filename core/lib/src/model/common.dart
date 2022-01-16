@@ -61,6 +61,15 @@ class Envelope {
     required this.nonce,
     required this.authTag,
   });
+
+  factory Envelope.fromBytes(Constants constants, Bytes bytes) {
+    return Envelope(
+      nonce: bytes.sublist(0, constants.Nn),
+      authTag: bytes.sublist(constants.Nn),
+    );
+  }
+
+  List<Bytes> asBytesList() => [nonce, authTag];
 }
 
 class RegistrationRequest {
@@ -84,11 +93,13 @@ class RegistrationResponse {
   });
 }
 
-class CredentialsRequest {
+class CredentialRequest {
   /// A serialized OPRF group element.
   final Bytes data;
 
-  CredentialsRequest({required this.data});
+  CredentialRequest({required this.data});
+
+  List<Bytes> asBytesList() => [data];
 }
 
 class CredentialResponse {
@@ -106,6 +117,8 @@ class CredentialResponse {
     required this.maskingNonce,
     required this.maskedResponse,
   });
+
+  List<Bytes> asBytesList() => [data, maskingNonce, maskedResponse];
 }
 
 class AuthInit {
@@ -119,6 +132,8 @@ class AuthInit {
     required this.clientNonce,
     required this.clientKeyshare,
   });
+
+  List<Bytes> asBytesList() => [clientNonce, clientKeyshare];
 }
 
 class AuthResponse {
@@ -138,6 +153,12 @@ class AuthResponse {
     required this.serverKeyshare,
     required this.serverMac,
   });
+
+  AuthResponse withServerMac(Bytes serverMac) => AuthResponse(
+        serverNonce: serverNonce,
+        serverKeyshare: serverKeyshare,
+        serverMac: serverMac,
+      );
 }
 
 class AuthFinish {
