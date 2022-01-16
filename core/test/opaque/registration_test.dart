@@ -44,9 +44,35 @@ void main() {
           vector.input.serverPublicKey,
         );
         expect(
-          response.data.hexEncode(),
+          response.data.hexEncode() + response.serverPublicKey.hexEncode(),
           vector.output.registrationResponse,
         );
+      });
+    }
+  });
+
+  group('finalize', () {
+    for (final vector in vectors) {
+      test(vector.name, () async {
+        final opaque = Opaque(vector.suite);
+
+        final registration = opaque.offlineRegistration;
+        final result = await registration.finalizeRequest(
+          password: vector.input.password.hexDecode(),
+          blind: vector.input.blindRegistration.hexDecode(),
+          response: RegistrationResponse.fromBytes(
+            opaque.suite.constants,
+            vector.output.registrationResponse.hexDecode(),
+          ),
+          // TODO: include public key?
+          serverIdentity: vector.input.serverIdentity?.hexDecode(),
+          clientIdentity: vector.input.clientIdentity?.hexDecode() ??
+              vector.intermediate.clientPublicKey.hexDecode(),
+        );
+
+        expect(result.exportKey.hexEncode(), vector.output.exportKey);
+        expect(result.record.envelope.toBytes().hexEncode(),
+            vector.intermediate.envelope);
       });
     }
   });

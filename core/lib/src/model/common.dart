@@ -70,6 +70,10 @@ class Envelope {
   }
 
   List<Bytes> asBytesList() => [nonce, authTag];
+
+  Bytes toBytes() => Uint8List.fromList([
+        for (final bytes in asBytesList()) ...bytes,
+      ]);
 }
 
 class RegistrationRequest {
@@ -91,6 +95,13 @@ class RegistrationResponse {
     required this.data,
     required this.serverPublicKey,
   });
+
+  factory RegistrationResponse.fromBytes(Constants constants, Bytes bytes) {
+    final dataLength = constants.Npk;
+    final data = bytes.sublist(0, dataLength);
+    final serverPublicKey = bytes.sublist(dataLength);
+    return RegistrationResponse(data: data, serverPublicKey: serverPublicKey);
+  }
 }
 
 class CredentialRequest {

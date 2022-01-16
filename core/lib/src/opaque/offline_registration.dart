@@ -1,4 +1,3 @@
-import 'package:convert/convert.dart';
 import 'package:opaque/src/model/model.dart';
 import 'package:opaque/src/opaque/opaque.dart';
 import 'package:opaque/src/util.dart';
@@ -104,15 +103,16 @@ class OfflineRegistrationImpl implements OfflineRegistration {
       info: Bytes(0),
     );
     final randomizedPassword = await suite.kdf.extract(
-        inputMaterial: concatBytes(
-      [
+      inputMaterial: concatBytes([
         y,
         await suite.mhf.harden(y),
-      ],
-    ));
+      ]),
+    );
     final storeResult = await opaque.keyRecovery.store(
       randomizedPassword: randomizedPassword,
       serverPublicKey: response.serverPublicKey,
+      clientIdentity: clientIdentity,
+      serverIdentity: serverIdentity,
     );
     final record = RegistrationRecord(
       clientPublicKey: storeResult.clientPublicKey,

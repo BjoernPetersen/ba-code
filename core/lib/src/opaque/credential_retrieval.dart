@@ -118,6 +118,8 @@ class CredentialRetrieval {
       randomizedPassword: randomizedPassword,
       serverPublicKey: serverPublicKey,
       envelope: envelope,
+      clientIdentity: clientIdentity,
+      serverIdentity: serverIdentity,
     );
     return RecoverCredentialsResult(
       clientPrivateKey: recoverResult.clientPrivateKey,

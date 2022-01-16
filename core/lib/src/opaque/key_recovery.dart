@@ -42,8 +42,8 @@ abstract class KeyRecovery {
   Future<StoreResult> store({
     required Bytes randomizedPassword,
     required Bytes serverPublicKey,
-    Bytes? serverIdentity,
-    Bytes? clientIdentity,
+    required Bytes? serverIdentity,
+    required Bytes? clientIdentity,
   });
 
   /// Clients recover their Envelope during login with the Recover function.
@@ -51,8 +51,8 @@ abstract class KeyRecovery {
     required Bytes randomizedPassword,
     required Bytes serverPublicKey,
     required Envelope envelope,
-    Bytes? serverIdentity,
-    Bytes? clientIdentity,
+    required Bytes? serverIdentity,
+    required Bytes? clientIdentity,
   });
 }
 
