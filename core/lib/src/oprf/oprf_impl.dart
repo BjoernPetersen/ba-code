@@ -52,7 +52,10 @@ class OprfImpl extends Oprf {
 
     final element = await group.hashToGroup(
       data: input,
-      domainSeparator: contextString,
+      domainSeparator: concatBytes([
+        'HashToGroup-'.asciiBytes(),
+        contextString,
+      ]),
     );
     final blinded = element * effectiveBlind.toBigInteger();
     return BlindPair(
@@ -105,7 +108,10 @@ class OprfImpl extends Oprf {
 
     final m = await group.hashToScalar(
       data: context,
-      domainSeparator: contextString,
+      domainSeparator: concatBytes([
+        'HashToScalar-'.asciiBytes(),
+        contextString,
+      ]),
     );
     final privateKeyScalar =
         group.deserializeScalar(privateKey).toBigInteger()!;

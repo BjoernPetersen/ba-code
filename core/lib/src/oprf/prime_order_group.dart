@@ -194,12 +194,7 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     required Bytes data,
     required Bytes domainSeparator,
   }) {
-    final prefix = 'HashToGroup-';
-    final fullDomainSeparator = concatBytes([
-      prefix.asciiBytes(),
-      domainSeparator,
-    ]);
-    return hashToCurve(data: data, domainSeparator: fullDomainSeparator);
+    return hashToCurve(data: data, domainSeparator: domainSeparator);
   }
 
   @override
@@ -207,14 +202,9 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     required Bytes data,
     required Bytes domainSeparator,
   }) async {
-    final prefix = 'HashToScalar-';
-    final fullDomainSeparator = concatBytes([
-      prefix.asciiBytes(),
-      domainSeparator,
-    ]);
     final hashed = (await hashToField(
       data: data,
-      domainSeparator: fullDomainSeparator,
+      domainSeparator: domainSeparator,
       count: 1,
     ));
     return hashed.single;

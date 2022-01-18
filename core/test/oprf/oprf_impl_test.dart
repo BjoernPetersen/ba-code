@@ -36,7 +36,13 @@ void testVectors(
   final secretKey = decodeKey(oprf.group, skSm);
   group('deriveKey', () {
     test('test vector key', () async {
-      final keyPair = await oprf.deriveKeyPair(seed: seed);
+      final keyPair = await oprf.deriveKeyPair(
+        seed: seed,
+        domainSeparator: concatBytes([
+          'HashToScalar-'.asciiBytes(),
+          oprf.contextString,
+        ]),
+      );
       expect(keyPair.private.hexEncode(), skSm);
     });
   });
@@ -72,7 +78,10 @@ void testVectors(
             // get our input back.
             final hashedToGroup = await oprf.group.hashToGroup(
               data: vector.input,
-              domainSeparator: oprf.contextString,
+              domainSeparator: concatBytes([
+                'HashToGroup-'.asciiBytes(),
+                oprf.contextString,
+              ]),
             );
             final expected = oprf.group.serializeElement(hashedToGroup);
             expect(unblinded.hexEncode(), expected.hexEncode());
