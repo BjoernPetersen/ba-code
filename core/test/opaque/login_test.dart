@@ -17,7 +17,7 @@ void main() {
         final clientState = MemoryClientState();
         final clientAke = opaque.getClientAke(clientState);
 
-        final result = await clientAke.init(
+        final ke1 = await clientAke.init(
           password: vector.input.password.hexDecode(),
           testBlind: vector.input.blindLogin.hexDecode(),
           testNonce: vector.input.clientNonce.hexDecode(),
@@ -25,10 +25,7 @@ void main() {
         );
 
         expect(
-          result
-              .asBytesList()
-              .map((e) => e.hexEncode())
-              .reduce((a, b) => a + b),
+          ke1.asBytesList().map((e) => e.hexEncode()).reduce((a, b) => a + b),
           vector.output.ke1,
         );
       });
@@ -46,7 +43,7 @@ void main() {
 
         final ke1 = vector.output.ke1.hexDecode();
 
-        final result = await serverAke.init(
+        final ke2 = await serverAke.init(
           serverIdentity: vector.input.serverIdentity?.hexDecode(),
           serverPrivateKey: vector.input.serverPrivateKey.hexDecode(),
           serverPublicKey: vector.input.serverPublicKey.hexDecode(),
@@ -68,6 +65,11 @@ void main() {
             private: vector.input.serverPrivateKey.hexDecode(),
             public: vector.input.serverPublicKey.hexDecode(),
           ),
+        );
+
+        expect(
+          ke2.asBytesList().map((e) => e.hexEncode()).reduce((a, b) => a + b),
+          vector.output.ke2,
         );
       });
     }

@@ -52,6 +52,11 @@ class KE2 {
         credentialResponse: credentialResponse,
         authResponse: authResponse.withServerMac(serverMac),
       );
+
+  List<Bytes> asBytesList() => [
+    ...credentialResponse.asBytesList(),
+    ...authResponse.asBytesList(),
+  ];
 }
 
 typedef KE3 = AuthFinish;

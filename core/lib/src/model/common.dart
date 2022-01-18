@@ -217,6 +217,12 @@ class AuthResponse {
         serverKeyshare: serverKeyshare,
         serverMac: serverMac,
       );
+
+  List<Bytes> asBytesList() => [
+        serverNonce,
+        serverKeyshare,
+        serverMac,
+      ];
 }
 
 class AuthFinish {
