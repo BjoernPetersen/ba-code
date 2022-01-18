@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 import '../util.dart';
 
 void main() {
-  group('Real Test Vectors from OPAQUE irtf', () {
+  group('Expand Real Test Vectors from OPAQUE irtf', () {
     for (int i = 0; i < vectors.length; i += 1) {
       test('Vector $i', () async {
         final vector = vectors[i];
