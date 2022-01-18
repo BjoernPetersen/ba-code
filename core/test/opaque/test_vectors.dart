@@ -87,6 +87,7 @@ class VectorOutput {
 class Vector {
   final String name;
   final Suite suite;
+  final String context;
   final VectorInput input;
   final VectorIntermediate intermediate;
   final VectorOutput output;
@@ -94,6 +95,7 @@ class Vector {
   Vector({
     required this.name,
     required this.suite,
+    required this.context,
     required this.input,
     required this.intermediate,
     required this.output,
@@ -104,6 +106,7 @@ final vectors = [
   Vector(
     name: 'OPAQUE-3DH Real Test Vector 3',
     suite: Suite.sha256p256(),
+    context: '4f50415155452d504f43',
     input: VectorInput(
       oprfSeed:
           '77bfc065218c9a5593c952161b93193f025b3474102519e6984fa648310dd1bf',
@@ -173,6 +176,7 @@ final vectors = [
   Vector(
     name: 'OPAQUE-3DH Real Test Vector 4',
     suite: Suite.sha256p256(),
+    context: '4f50415155452d504f43',
     input: VectorInput(
       clientIdentity: '616c696365',
       serverIdentity: '626f62',

@@ -56,11 +56,11 @@ class Opaque {
 
   OfflineRegistration get offlineRegistration => OfflineRegistrationImpl(this);
 
-  ClientOnlineAke getClientAke(ClientState state) =>
-      ClientOnlineAkeImpl(this, state);
+  ClientOnlineAke getClientAke(ClientState state, {Bytes? dhContext}) =>
+      ClientOnlineAkeImpl(this, dhContext ?? Bytes(0), state);
 
-  ServerOnlineAke getServerAke(ServerState state) =>
-      ServerOnlineAkeImpl(this, state);
+  ServerOnlineAke getServerAke(ServerState state, {Bytes? dhContext}) =>
+      ServerOnlineAkeImpl(this, dhContext ?? Bytes(0), state);
 }
 
 Future<Bytes> Function(List<int>) _simpleHash(crypto.HashAlgorithm cryptoHash) {

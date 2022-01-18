@@ -15,7 +15,10 @@ void main() {
         final opaque = Opaque(vector.suite);
 
         final clientState = MemoryClientState();
-        final clientAke = opaque.getClientAke(clientState);
+        final clientAke = opaque.getClientAke(
+          clientState,
+          dhContext: vector.context.hexDecode(),
+        );
 
         final ke1 = await clientAke.init(
           password: vector.input.password.hexDecode(),
@@ -38,8 +41,10 @@ void main() {
         final opaque = Opaque(vector.suite);
 
         final serverState = MemoryServerState();
-        final serverAke =
-            opaque.getServerAke(serverState) as ServerOnlineAkeImpl;
+        final serverAke = opaque.getServerAke(
+          serverState,
+          dhContext: vector.context.hexDecode(),
+        ) as ServerOnlineAkeImpl;
 
         late final KE2 ke2;
 

@@ -34,11 +34,12 @@ class ClientOnlineAkeImpl implements ClientOnlineAke {
   final Opaque opaque;
   final ClientState _state;
   final CredentialRetrieval _credentialRetrieval;
+  final Bytes dhContext;
   final ThreeDiffieHellman _threeDh;
 
-  ClientOnlineAkeImpl(this.opaque, this._state)
+  ClientOnlineAkeImpl(this.opaque, this.dhContext, this._state)
       : _credentialRetrieval = CredentialRetrieval(opaque),
-        _threeDh = ThreeDiffieHellman(opaque);
+        _threeDh = ThreeDiffieHellman(opaque, dhContext);
 
   Suite get suite => opaque.suite;
 
@@ -113,11 +114,12 @@ class ServerOnlineAkeImpl implements ServerOnlineAke {
   final Opaque opaque;
   final ServerState _state;
   final CredentialRetrieval _credentialRetrieval;
+  final Bytes dhContext;
   final ThreeDiffieHellman _threeDh;
 
-  ServerOnlineAkeImpl(this.opaque, this._state)
+  ServerOnlineAkeImpl(this.opaque, this.dhContext, this._state)
       : _credentialRetrieval = CredentialRetrieval(opaque),
-        _threeDh = ThreeDiffieHellman(opaque);
+        _threeDh = ThreeDiffieHellman(opaque, dhContext);
 
   Suite get suite => opaque.suite;
 

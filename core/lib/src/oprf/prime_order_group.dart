@@ -116,7 +116,6 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     for (int i = 0; i < count; i += 1) {
       final offset = l * i;
       final tv = expanded.sublist(offset, offset + l);
-      // TODO order or q?
       final rawField = bytesToInt(tv).remainder(modulus);
       result.add(_curve.fromBigInteger(rawField));
     }

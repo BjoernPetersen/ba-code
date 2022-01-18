@@ -54,23 +54,29 @@ class KE2 {
       );
 
   List<Bytes> asBytesList() => [
-    ...credentialResponse.asBytesList(),
-    ...authResponse.asBytesList(),
-  ];
+        ...credentialResponse.asBytesList(),
+        ...authResponse.asBytesList(),
+      ];
 
   static int size(Constants constants) {
     return CredentialResponse.size(constants) + AuthResponse.size(constants);
   }
 
-  factory KE2.fromBytes(Constants constants ,Bytes bytes) {
+  factory KE2.fromBytes(Constants constants, Bytes bytes) {
     if (bytes.length != size(constants)) {
       throw ArgumentError('Invalid data size', 'bytes');
     }
     return KE2(
-      credentialResponse: CredentialResponse.fromBytes(constants, bytes.slice(0, CredentialResponse.size(constants)),),
+      credentialResponse: CredentialResponse.fromBytes(
+        constants,
+        bytes.slice(0, CredentialResponse.size(constants)),
+      ),
       authResponse: AuthResponse.fromBytes(
         constants,
-        bytes.slice(CredentialResponse.size(constants), AuthResponse.size(constants),),
+        bytes.slice(
+          CredentialResponse.size(constants),
+          AuthResponse.size(constants),
+        ),
       ),
     );
   }
@@ -102,21 +108,24 @@ class DeriveKeysResult {
 
 class ThreeDiffieHellman {
   final Opaque opaque;
+  final Bytes context;
 
   Suite get suite => opaque.suite;
 
-  ThreeDiffieHellman(this.opaque);
+  ThreeDiffieHellman(this.opaque, this.context);
 
   Future<Bytes> _preamble({
     required Bytes clientIdentity,
     required KE1 ke1,
     required Bytes serverIdentity,
     required KE2 ke2,
+    required Bytes context,
   }) async {
     // TODO literally RFCXXXX?
-    // FIXME: include context
     return concatBytes([
       'RFCXXXX'.asciiBytes(),
+      smallIntToBytes(context.length, length: 2),
+      context,
       smallIntToBytes(clientIdentity.lengthInBytes, length: 2),
       clientIdentity,
       ...ke1.asBytesList(),
@@ -179,6 +188,7 @@ class ThreeDiffieHellman {
       ke1: state.ke1,
       serverIdentity: serverIdentity,
       ke2: ke2,
+      context: context,
     );
     final deriveKeysResult = await _deriveKeys(ikm: ikm, preamble: preamble);
     final expectedServerMac = await suite.kdf.mac(
@@ -227,6 +237,7 @@ class ThreeDiffieHellman {
       ke1: ke1,
       serverIdentity: serverIdentity,
       ke2: ke2,
+      context: context,
     );
     final ikm = await _tripleDiffieKeyMaterial(
       KeyPair(
@@ -301,8 +312,8 @@ class ThreeDiffieHellman {
       hashedPreamble,
     );
     final sessionKey = await _deriveSecret(prk, 'SessionKey', hashedPreamble);
-    final km2 = await _deriveSecret(handshakeSecret, 'ServerMAC', List.empty());
-    final km3 = await _deriveSecret(handshakeSecret, 'ClientMAC', List.empty());
+    final km2 = await _deriveSecret(handshakeSecret, 'ServerMAC', Bytes(0));
+    final km3 = await _deriveSecret(handshakeSecret, 'ClientMAC', Bytes(0));
     return DeriveKeysResult(
       km2: km2,
       km3: km3,
@@ -322,13 +333,12 @@ class ThreeDiffieHellman {
   Future<Bytes> _expandLabel(
     Bytes secret,
     String label,
-    List<int> context,
+    Bytes context,
     int length,
   ) async {
-    // TODO context instead of nil
     return await suite.kdf.expand(
       key: secret,
-      info: _customLabel(length, label, Bytes(0)),
+      info: _customLabel(length, label, context),
       l: length,
     );
   }
@@ -336,7 +346,7 @@ class ThreeDiffieHellman {
   Future<Bytes> _deriveSecret(
     Bytes secret,
     String label,
-    List<int> transcriptHash,
+    Bytes transcriptHash,
   ) async {
     return await _expandLabel(
       secret,
