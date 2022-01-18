@@ -57,6 +57,23 @@ class KE2 {
     ...credentialResponse.asBytesList(),
     ...authResponse.asBytesList(),
   ];
+
+  static int size(Constants constants) {
+    return CredentialResponse.size(constants) + AuthResponse.size(constants);
+  }
+
+  factory KE2.fromBytes(Constants constants ,Bytes bytes) {
+    if (bytes.length != size(constants)) {
+      throw ArgumentError('Invalid data size', 'bytes');
+    }
+    return KE2(
+      credentialResponse: CredentialResponse.fromBytes(constants, bytes.slice(0, CredentialResponse.size(constants)),),
+      authResponse: AuthResponse.fromBytes(
+        constants,
+        bytes.slice(CredentialResponse.size(constants), AuthResponse.size(constants),),
+      ),
+    );
+  }
 }
 
 typedef KE3 = AuthFinish;

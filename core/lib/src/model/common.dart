@@ -161,6 +161,24 @@ class CredentialResponse {
   });
 
   List<Bytes> asBytesList() => [data, maskingNonce, maskedResponse];
+
+  static int size(Constants constants) {
+    return constants.Noe +
+        constants.Nn +
+        constants.Npk +
+        Envelope.size(constants);
+  }
+
+  factory CredentialResponse.fromBytes(Constants constants, Bytes bytes) {
+    if (bytes.length != size(constants)) {
+      throw ArgumentError('Invalid data size', 'bytes');
+    }
+    return CredentialResponse(
+      data: bytes.slice(0, constants.Noe),
+      maskingNonce: bytes.slice(constants.Noe, constants.Nn),
+      maskedResponse: bytes.slice(constants.Noe + constants.Nn),
+    );
+  }
 }
 
 class AuthInit {
@@ -223,6 +241,21 @@ class AuthResponse {
         serverKeyshare,
         serverMac,
       ];
+
+  static int size(Constants constants) {
+    return constants.Nn + constants.Npk + constants.Nm;
+  }
+
+  factory AuthResponse.fromBytes(Constants constants, Bytes bytes) {
+    if (bytes.length != size(constants)) {
+      throw ArgumentError('Invalid data size', 'bytes');
+    }
+    return AuthResponse(
+      serverNonce: bytes.slice(0, constants.Nn),
+      serverKeyshare: bytes.slice(constants.Nn, constants.Npk),
+      serverMac: bytes.slice(constants.Nn + constants.Npk),
+    );
+  }
 }
 
 class AuthFinish {

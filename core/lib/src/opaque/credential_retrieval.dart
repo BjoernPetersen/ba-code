@@ -61,16 +61,10 @@ class CredentialRetrieval {
     );
     final maskingNonce =
         testMaskingNonce ?? await opaque.randomSeed(suite.constants.Nn);
-    // TODO: this could be calculated in constants
-    // ignore: non_constant_identifier_names
-    final Ne = record.envelope
-        .asBytesList()
-        .map((e) => e.lengthInBytes)
-        .reduce((a, b) => a + b);
     final credentialResponsePad = await suite.kdf.expand(
       key: record.maskingKey,
       info: concatBytes([maskingNonce, 'CredentialResponsePad'.asciiBytes()]),
-      l: suite.constants.Npk + Ne,
+      l: suite.constants.Npk + Envelope.size(suite.constants),
     );
     final maskedResponse = credentialResponsePad ^
         concatBytes([
@@ -105,17 +99,19 @@ class CredentialRetrieval {
       info: 'MaskingKey'.asciiBytes(),
       l: suite.constants.Nh,
     );
-    // FIXME: use calculated value
-    final Ne = 32;
+
     final credentialResponsePad = await suite.kdf.expand(
       key: maskingKey,
       info: concatBytes(
           [response.maskingNonce, 'CredentialResponsePad'.asciiBytes()]),
-      l: suite.constants.Npk + Ne,
+      l: suite.constants.Npk + Envelope.size(suite.constants),
     );
     final xored = credentialResponsePad ^ response.maskedResponse;
-    final serverPublicKey = xored.sublist(0, xored.length - Ne);
-    final envelopeBytes = xored.sublist(xored.length - Ne);
+    final serverPublicKey = xored.slice(0, suite.constants.Npk);
+    final envelopeBytes = xored.slice(
+      suite.constants.Npk,
+      Envelope.size(suite.constants),
+    );
     final Envelope envelope = Envelope.fromBytes(
       suite.constants,
       envelopeBytes,

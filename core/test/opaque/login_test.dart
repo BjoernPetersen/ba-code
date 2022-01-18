@@ -41,8 +41,6 @@ void main() {
         final serverAke =
             opaque.getServerAke(serverState) as ServerOnlineAkeImpl;
 
-        final ke1 = vector.output.ke1.hexDecode();
-
         final ke2 = await serverAke.init(
           serverIdentity: vector.input.serverIdentity?.hexDecode(),
           serverPrivateKey: vector.input.serverPrivateKey.hexDecode(),
@@ -67,6 +65,15 @@ void main() {
           ),
         );
 
+        final expectedKe2 = KE2.fromBytes(
+          vector.suite.constants,
+          vector.output.ke2.hexDecode(),
+        );
+
+        expect(
+          ke2.authResponse.serverMac.hexEncode(),
+          expectedKe2.authResponse.serverMac.hexEncode(),
+        );
         expect(
           ke2.asBytesList().map((e) => e.hexEncode()).reduce((a, b) => a + b),
           vector.output.ke2,
