@@ -47,7 +47,7 @@ class CredentialRetrieval {
     required RegistrationRecord record,
     required Bytes credentialIdentifier,
     required Bytes oprfSeed,
-    Bytes? testMaskingNonce,
+    required Bytes? testMaskingNonce,
   }) async {
     final seed = await suite.kdf.expand(
       key: oprfSeed,

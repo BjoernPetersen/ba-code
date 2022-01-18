@@ -121,7 +121,6 @@ class ThreeDiffieHellman {
     required KE2 ke2,
     required Bytes context,
   }) async {
-    // TODO literally RFCXXXX?
     return concatBytes([
       'RFCXXXX'.asciiBytes(),
       smallIntToBytes(context.length, length: 2),
