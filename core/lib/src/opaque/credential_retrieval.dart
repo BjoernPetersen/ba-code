@@ -1,3 +1,4 @@
+import 'package:convert/convert.dart';
 import 'package:opaque/src/model/model.dart';
 import 'package:opaque/src/opaque/opaque.dart';
 import 'package:opaque/src/util.dart';
