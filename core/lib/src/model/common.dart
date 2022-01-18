@@ -29,6 +29,9 @@ class Constants {
   // ignore: non_constant_identifier_names
   final int Nok;
 
+  // ignore: non_constant_identifier_names
+  final int Noe;
+
   const Constants({
     // ignore: non_constant_identifier_names
     required this.Nh,
@@ -42,6 +45,8 @@ class Constants {
     required this.Nx,
     // ignore: non_constant_identifier_names
     required this.Nok,
+    // ignore: non_constant_identifier_names
+    required this.Noe,
   });
 }
 
@@ -62,10 +67,18 @@ class Envelope {
     required this.authTag,
   });
 
+  static int size(Constants constants) {
+    return constants.Nn + constants.Nm;
+  }
+
   factory Envelope.fromBytes(Constants constants, Bytes bytes) {
+    if (bytes.length != size(constants)) {
+      throw ArgumentError('Invalid data size', 'bytes');
+    }
+    final buffer = bytes.buffer;
     return Envelope(
-      nonce: bytes.sublist(0, constants.Nn),
-      authTag: bytes.sublist(constants.Nn),
+      nonce: buffer.asUint8List(0, constants.Nn),
+      authTag: buffer.asUint8List(constants.Nn, constants.Nm),
     );
   }
 
@@ -96,10 +109,17 @@ class RegistrationResponse {
     required this.serverPublicKey,
   });
 
+  static int size(Constants constants) {
+    return constants.Noe + constants.Npk;
+  }
+
   factory RegistrationResponse.fromBytes(Constants constants, Bytes bytes) {
-    final dataLength = constants.Npk;
-    final data = bytes.sublist(0, dataLength);
-    final serverPublicKey = bytes.sublist(dataLength);
+    if (bytes.length != size(constants)) {
+      throw ArgumentError('Invalid data size', 'bytes');
+    }
+    final buffer = bytes.buffer;
+    final data = buffer.asUint8List(0, constants.Noe);
+    final serverPublicKey = buffer.asUint8List(constants.Noe, constants.Npk);
     return RegistrationResponse(data: data, serverPublicKey: serverPublicKey);
   }
 }
@@ -111,6 +131,17 @@ class CredentialRequest {
   CredentialRequest({required this.data});
 
   List<Bytes> asBytesList() => [data];
+
+  static int size(Constants constants) {
+    return constants.Noe;
+  }
+
+  factory CredentialRequest.fromBytes(Constants constants, Bytes bytes) {
+    if (bytes.length != size(constants)) {
+      throw ArgumentError('Invalid data size', 'bytes');
+    }
+    return CredentialRequest(data: bytes);
+  }
 }
 
 class CredentialResponse {
@@ -146,13 +177,21 @@ class AuthInit {
 
   List<Bytes> asBytesList() => [clientNonce, clientKeyshare];
 
+  static int size(Constants constants) {
+    return constants.Nn + constants.Npk;
+  }
+
   factory AuthInit.fromBytes(Constants constants, Bytes bytes) {
-    final clientNonce = bytes.sublist(0, constants.Nn);
-    final clientKeyshare = bytes.sublist(
-      constants.Nn,
-      constants.Nn + constants.Npk,
+    if (bytes.length != size(constants)) {
+      throw ArgumentError('Invalid data size', 'bytes');
+    }
+    final buffer = bytes.buffer;
+    final clientNonce = buffer.asUint8List(0, constants.Nn);
+    final clientKeyshare = buffer.asUint8List(constants.Nn, constants.Npk);
+    return AuthInit(
+      clientNonce: clientNonce,
+      clientKeyshare: clientKeyshare,
     );
-    return AuthInit(clientNonce: clientNonce, clientKeyshare: clientKeyshare);
   }
 }
 

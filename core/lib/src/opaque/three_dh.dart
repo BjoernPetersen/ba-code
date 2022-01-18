@@ -18,15 +18,22 @@ class KE1 {
         ...authInit.asBytesList(),
       ];
 
+  static int size(Constants constants) {
+    return CredentialRequest.size(constants) + AuthInit.size(constants);
+  }
+
   factory KE1.fromBytes(Constants constants, Bytes bytes) {
-    final authSize = constants.Nn + constants.Npk;
+    if (bytes.length != size(constants)) {
+      throw ArgumentError('Invalid data size', 'bytes');
+    }
+    final buffer = bytes.buffer;
     return KE1(
-      credentialRequest: CredentialRequest(
-        data: bytes.sublist(0, bytes.length - authSize),
+      credentialRequest: CredentialRequest.fromBytes(
+        constants, buffer.asUint8List(0, CredentialRequest.size(constants)),
       ),
       authInit: AuthInit.fromBytes(
         constants,
-        bytes.sublist(bytes.length - authSize),
+        buffer.asUint8List(CredentialRequest.size(constants)),
       ),
     );
   }

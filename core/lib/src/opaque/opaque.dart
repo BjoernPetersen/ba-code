@@ -95,6 +95,7 @@ class Suite {
         Nm: 32,
         Nx: 32,
         Nok: 32,
+        Noe: 33,
       ),
     );
   }
@@ -113,6 +114,7 @@ class Suite {
         Nm: 48,
         Nx: 48,
         Nok: 48,
+        Noe: 49,
       ),
     );
   }

@@ -19,8 +19,25 @@ class RegistrationRecord {
     required this.envelope,
   });
 
+  static int size(Constants constants) {
+    return constants.Npk + constants.Nh + Envelope.size(constants);
+  }
+
   factory RegistrationRecord.fromBytes(Constants constants, Bytes bytes) {
-    // FIXME: implement
-    throw UnimplementedError('not implemented');
+    if (bytes.length != size(constants)) {
+      throw ArgumentError('Invalid data size', 'bytes');
+    }
+    final buffer = bytes.buffer;
+    final clientPublicKey = buffer.asUint8List(0, constants.Npk);
+    final maskingKey = buffer.asUint8List(constants.Npk, constants.Nh);
+    final envelope = Envelope.fromBytes(
+      constants,
+      buffer.asUint8List(size(constants) - Envelope.size(constants)),
+    );
+    return RegistrationRecord(
+      clientPublicKey: clientPublicKey,
+      maskingKey: maskingKey,
+      envelope: envelope,
+    );
   }
 }
