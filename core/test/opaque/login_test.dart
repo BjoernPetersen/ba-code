@@ -44,6 +44,8 @@ void main() {
         final serverAke =
             opaque.getServerAke(serverState) as ServerOnlineAkeImpl;
 
+        final ke1 = vector.output.ke1.hexDecode();
+
         final result = await serverAke.init(
           serverIdentity: vector.input.serverIdentity?.hexDecode(),
           serverPrivateKey: vector.input.serverPrivateKey.hexDecode(),

@@ -26,14 +26,14 @@ class KE1 {
     if (bytes.length != size(constants)) {
       throw ArgumentError('Invalid data size', 'bytes');
     }
-    final buffer = bytes.buffer;
     return KE1(
       credentialRequest: CredentialRequest.fromBytes(
-        constants, buffer.asUint8List(0, CredentialRequest.size(constants)),
+        constants,
+        bytes.slice(0, CredentialRequest.size(constants)),
       ),
       authInit: AuthInit.fromBytes(
         constants,
-        buffer.asUint8List(CredentialRequest.size(constants)),
+        bytes.slice(CredentialRequest.size(constants)),
       ),
     );
   }
@@ -139,12 +139,18 @@ class ThreeDiffieHellman {
     required KE2 ke2,
   }) async {
     final ikm = await _tripleDiffieKeyMaterial(
-      state.clientSecret,
-      ke2.authResponse.serverKeyshare,
-      state.clientSecret,
-      serverPublicKey,
-      clientPrivateKey,
-      ke2.authResponse.serverKeyshare,
+      KeyPair(
+        private: state.clientSecret,
+        public: ke2.authResponse.serverKeyshare,
+      ),
+      KeyPair(
+        private: state.clientSecret,
+        public: serverPublicKey,
+      ),
+      KeyPair(
+        private: clientPrivateKey,
+        public: ke2.authResponse.serverKeyshare,
+      ),
     );
     final preamble = await _preamble(
       clientIdentity: clientIdentity,
@@ -201,12 +207,18 @@ class ThreeDiffieHellman {
       ke2: ke2,
     );
     final ikm = await _tripleDiffieKeyMaterial(
-      keyPair.private,
-      ke1.authInit.clientKeyshare,
-      serverPrivateKey,
-      ke1.authInit.clientKeyshare,
-      keyPair.private,
-      clientPublicKey,
+      KeyPair(
+        private: keyPair.private,
+        public: ke1.authInit.clientKeyshare,
+      ),
+      KeyPair(
+        private: serverPrivateKey,
+        public: ke1.authInit.clientKeyshare,
+      ),
+      KeyPair(
+        private: keyPair.private,
+        public: clientPublicKey,
+      ),
     );
     final deriveKeysResult = await _deriveKeys(ikm: ikm, preamble: preamble);
     final serverMac = await suite.kdf.mac(
@@ -236,24 +248,21 @@ class ThreeDiffieHellman {
   }
 
   Future<Bytes> _tripleDiffieKeyMaterial(
-    Bytes sk1,
-    Bytes pk1,
-    Bytes sk2,
-    Bytes pk2,
-    Bytes sk3,
-    Bytes pk3,
+    KeyPair keyPair1,
+    KeyPair keyPair2,
+    KeyPair keyPair3,
   ) async {
     final dh1 = await suite.oprf.multiply(
-      serializedScalar: sk1,
-      serializedElement: pk1,
+      serializedScalar: keyPair1.private,
+      serializedElement: keyPair1.public,
     );
     final dh2 = await suite.oprf.multiply(
-      serializedScalar: sk2,
-      serializedElement: pk2,
+      serializedScalar: keyPair2.private,
+      serializedElement: keyPair2.public,
     );
     final dh3 = await suite.oprf.multiply(
-      serializedScalar: sk3,
-      serializedElement: pk3,
+      serializedScalar: keyPair3.private,
+      serializedElement: keyPair3.public,
     );
     return concatBytes([dh1, dh2, dh3]);
   }

@@ -26,6 +26,13 @@ extension BytesUtils on Bytes {
 
     return result;
   }
+
+  Bytes slice([int offset = 0, int? length]) {
+    return sublist(
+      offset,
+      length == null ? null : offset + length,
+    );
+  }
 }
 
 extension Ascii on String {

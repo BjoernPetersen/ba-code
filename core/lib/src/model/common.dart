@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:opaque/src/util.dart';
+
 export 'package:opaque/src/model/exception.dart';
 
 typedef Bytes = Uint8List;
@@ -75,10 +77,9 @@ class Envelope {
     if (bytes.length != size(constants)) {
       throw ArgumentError('Invalid data size', 'bytes');
     }
-    final buffer = bytes.buffer;
     return Envelope(
-      nonce: buffer.asUint8List(0, constants.Nn),
-      authTag: buffer.asUint8List(constants.Nn, constants.Nm),
+      nonce: bytes.slice(0, constants.Nn),
+      authTag: bytes.slice(constants.Nn, constants.Nm),
     );
   }
 
@@ -117,9 +118,8 @@ class RegistrationResponse {
     if (bytes.length != size(constants)) {
       throw ArgumentError('Invalid data size', 'bytes');
     }
-    final buffer = bytes.buffer;
-    final data = buffer.asUint8List(0, constants.Noe);
-    final serverPublicKey = buffer.asUint8List(constants.Noe, constants.Npk);
+    final data = bytes.slice(0, constants.Noe);
+    final serverPublicKey = bytes.slice(constants.Noe, constants.Npk);
     return RegistrationResponse(data: data, serverPublicKey: serverPublicKey);
   }
 }
@@ -185,9 +185,8 @@ class AuthInit {
     if (bytes.length != size(constants)) {
       throw ArgumentError('Invalid data size', 'bytes');
     }
-    final buffer = bytes.buffer;
-    final clientNonce = buffer.asUint8List(0, constants.Nn);
-    final clientKeyshare = buffer.asUint8List(constants.Nn, constants.Npk);
+    final clientNonce = bytes.slice(0, constants.Nn);
+    final clientKeyshare = bytes.slice(constants.Nn, constants.Npk);
     return AuthInit(
       clientNonce: clientNonce,
       clientKeyshare: clientKeyshare,

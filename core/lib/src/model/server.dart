@@ -1,4 +1,5 @@
 import 'package:opaque/src/model/common.dart';
+import 'package:opaque/src/util.dart';
 
 export 'package:opaque/src/model/common.dart';
 
@@ -27,12 +28,11 @@ class RegistrationRecord {
     if (bytes.length != size(constants)) {
       throw ArgumentError('Invalid data size', 'bytes');
     }
-    final buffer = bytes.buffer;
-    final clientPublicKey = buffer.asUint8List(0, constants.Npk);
-    final maskingKey = buffer.asUint8List(constants.Npk, constants.Nh);
+    final clientPublicKey = bytes.slice(0, constants.Npk);
+    final maskingKey = bytes.slice(constants.Npk, constants.Nh);
     final envelope = Envelope.fromBytes(
       constants,
-      buffer.asUint8List(size(constants) - Envelope.size(constants)),
+      bytes.slice(size(constants) - Envelope.size(constants)),
     );
     return RegistrationRecord(
       clientPublicKey: clientPublicKey,
