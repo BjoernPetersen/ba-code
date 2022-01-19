@@ -24,8 +24,63 @@ class OpaqueManager {
     return _storage[username];
   }
 
+  FutureOr<void> _storeStorageEntry(
+    String username,
+    StorageEntry entry,
+  ) {
+    final existing = _storage[username];
+    if (existing != null && existing.registrationRecord != null) {
+      throw StateError('Cannot override existing registration');
+    }
+    _storage[username] = entry;
+  }
+
   FutureOr<ServerState?> _loadState(String username) {
     return _statesByUsername[username];
+  }
+
+  Future<Bytes> initRegistration(
+    String username,
+    Bytes requestBytes,
+  ) async {
+    final request = RegistrationRequest.fromBytes(
+      _opaque.suite.constants,
+      requestBytes,
+    );
+    final registration = _opaque.offlineRegistration;
+    final keyPair = await _keyPair;
+    final oprfSeed = await _opaque.generateOprfSeed();
+    final response = await registration.createRegistrationResponse(
+      request: request,
+      serverPublicKey: keyPair.public,
+      credentialIdentifier: _encoder.convert(username),
+      oprfSeed: oprfSeed,
+    );
+    final storageEntry = StorageEntry(
+      registrationRecord: null,
+      oprfSeed: oprfSeed,
+    );
+    await _storeStorageEntry(username, storageEntry);
+    return response.serialize();
+  }
+
+  Future<void> finalizeRegistration(String username, Bytes recordBytes) async {
+    final record = RegistrationRecord.fromBytes(
+      _opaque.suite.constants,
+      recordBytes,
+    );
+    final entry = await _loadStorageEntry(username);
+    if (entry == null) {
+      throw StateError('Unknown user');
+    }
+    if (entry.registrationRecord != null) {
+      throw StateError('Already registered');
+    }
+    final newEntry = StorageEntry(
+      registrationRecord: record,
+      oprfSeed: entry.oprfSeed,
+    );
+    await _storeStorageEntry(username, newEntry);
   }
 
   Future<Bytes> initLogin(String username, List<int> requestBytes) async {
@@ -37,6 +92,11 @@ class OpaqueManager {
     if (storageEntry == null) {
       // TODO: these exceptions theoretically allow client enumeration attacks
       throw StateError('Unknown user $username');
+    }
+
+    final registrationRecord = storageEntry.registrationRecord;
+    if (registrationRecord == null) {
+      throw StateError('Registration has not finished');
     }
 
     final state = MemoryServerState();
@@ -51,7 +111,7 @@ class OpaqueManager {
       serverIdentity: _encoder.convert('opaque.bjoernpetersen.net'),
       serverPrivateKey: keyPair.private,
       serverPublicKey: keyPair.public,
-      record: storageEntry.registrationRecord,
+      record: registrationRecord,
       credentialIdentifier: clientIdentity,
       oprfSeed: storageEntry.oprfSeed,
       ke1: ke1,

@@ -95,6 +95,14 @@ class RegistrationRequest {
   final Bytes data;
 
   RegistrationRequest({required this.data});
+
+  factory RegistrationRequest.fromBytes(Constants constants, Bytes bytes) {
+    if (bytes.length != constants.Noe) {
+      throw ArgumentError('Invalid data size', 'bytes');
+    }
+
+    return RegistrationRequest(data: bytes);
+  }
 }
 
 class RegistrationResponse {
@@ -122,6 +130,10 @@ class RegistrationResponse {
     final serverPublicKey = bytes.slice(constants.Noe, constants.Npk);
     return RegistrationResponse(data: data, serverPublicKey: serverPublicKey);
   }
+
+  List<Bytes> asBytesList() => [data, serverPublicKey];
+
+  Bytes serialize() => concatBytes(asBytesList());
 }
 
 class CredentialRequest {

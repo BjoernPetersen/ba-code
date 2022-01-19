@@ -35,6 +35,10 @@ class Opaque {
     return result;
   }
 
+  Future<Bytes> generateOprfSeed() async {
+    return randomSeed(suite.constants.Nh);
+  }
+
   Future<KeyPair> generateAuthKeyPair() async {
     final seed = await randomSeed(suite.constants.Nok);
     return suite.oprf.deriveKeyPair(seed: seed);

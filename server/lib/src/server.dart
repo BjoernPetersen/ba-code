@@ -24,6 +24,40 @@ class Server {
 
   FutureOr<Response> call(Request request) => _router.call(request);
 
+  @Route.post('/opaque/<username>/registration/init')
+  Future<Response> initRegistration(Request request, String username) async {
+    final body = await request.read().toBytes();
+    final Bytes response;
+    try {
+      response = await _opaque.initRegistration(username, body);
+    } on ArgumentError {
+      return Response(HttpStatus.badRequest);
+    } on StateError {
+      // TODO: change exception type
+      return Response(HttpStatus.conflict);
+    }
+
+    return Response.ok(response);
+  }
+
+  @Route.post('/opaque/<username>/registration/finalize')
+  Future<Response> finalizeRegistration(
+    Request request,
+    String username,
+  ) async {
+    final body = await request.read().toBytes();
+    try {
+      await _opaque.finalizeRegistration(username, body);
+    } on ArgumentError {
+      return Response(HttpStatus.badRequest);
+    } on StateError {
+      // TODO: change exception type
+      return Response(HttpStatus.conflict);
+    }
+
+    return Response(HttpStatus.noContent);
+  }
+
   @Route.post('/opaque/<username>/login/init')
   Future<Response> initLogin(Request request, String username) async {
     final body = await request.read().toBytes();
