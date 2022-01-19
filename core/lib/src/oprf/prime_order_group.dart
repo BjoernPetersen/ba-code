@@ -61,7 +61,9 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     required this.expanderFactory,
     required int L,
     required int Z,
+    // ignore: non_constant_identifier_names
     required int Ne,
+        // ignore: non_constant_identifier_names
     required int Ns,
   })  : _curve = _params.curve as fp.ECCurve,
         _l = L,

@@ -1,5 +1,4 @@
 import 'package:opaque/src/data_conversion.dart';
-import 'package:opaque/src/model/common.dart';
 import 'package:opaque/src/util.dart';
 
 export 'package:opaque/src/model/common.dart';
