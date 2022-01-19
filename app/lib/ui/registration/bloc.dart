@@ -118,8 +118,9 @@ class RegistrationBloc extends Bloc<_RegisterEvent, RegistrationState> {
     CheckUsername event,
     Emitter<RegistrationState> emit,
   ) async {
-    emit(state.checkUsername(username: event.username));
-    final isAvailable = await _checkAvailability(event.username);
+    final username = event.username.trim();
+    emit(state.checkUsername(username: username));
+    final isAvailable = await _checkAvailability(username);
     emit(state.checkResult(isAvailable));
   }
 
@@ -134,10 +135,11 @@ class RegistrationBloc extends Bloc<_RegisterEvent, RegistrationState> {
     Register event,
     Emitter<RegistrationState> emit,
   ) async {
-    emit(state.registering(password: event.password));
+    final password = event.password.trim();
+    emit(state.registering(password: password));
     final result = await _registerUser(
       user: state.username!,
-      password: event.password,
+      password: password,
     );
     if (result) {
       emit(state.done());

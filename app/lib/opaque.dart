@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:opaque/client.dart';
+import 'package:opaque_app/state.dart';
 
 class OpaqueHandler {
   static const _encoder = AsciiEncoder();
@@ -66,8 +67,46 @@ class OpaqueHandler {
     required String username,
     required String password,
   }) async {
-    // TODO implement
-    throw UnimplementedError();
+    final state = MemoryClientState();
+    final ake = _opaque.getClientAke(state);
+    final ke1 = await ake.init(
+      password: _encoder.convert(password),
+    );
+    final remoteClient = _RemoteClient();
+
+    final Bytes responseBytes;
+    try {
+      responseBytes = await remoteClient.post(
+        path: '/opaque/$username/login/init',
+        body: ke1.serialize(),
+      );
+    } on _HttpException catch (e) {
+      if (kDebugMode) {
+        print('Encountered HTTP error $e');
+      }
+      return false;
+    }
+
+    final ke2 = KE2.fromBytes(_opaque.suite.constants, responseBytes);
+    final finishResult = await ake.finish(
+      clientIdentity: _encoder.convert(username),
+      serverIdentity: _encoder.convert('opaque.bjoernpetersen.net'),
+      ke2: ke2,
+    );
+
+    try {
+      await remoteClient.post(
+        path: '/opaque/$username/login/finish',
+        body: finishResult.ke3.serialize(),
+      );
+    } on _HttpException catch (e) {
+      if (kDebugMode) {
+        print('Encountered HTTP error $e');
+      }
+      return false;
+    }
+
+    return true;
   }
 }
 

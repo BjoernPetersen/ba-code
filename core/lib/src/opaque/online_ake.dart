@@ -50,6 +50,7 @@ class ClientOnlineAkeImpl implements ClientOnlineAke {
       blind: testBlind,
     );
     _state.blind = result.blind;
+    _state.password = password;
     return await _threeDh.clientStart(
       state: _state,
       request: result.request,

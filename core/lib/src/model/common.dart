@@ -283,6 +283,8 @@ class AuthFinish {
 
   List<Bytes> asBytesList() => [clientMac];
 
+  Bytes serialize() => concatBytes(asBytesList());
+
   factory AuthFinish.fromBytes(Constants constants, Bytes bytes) {
     if (bytes.length != constants.Nm) {
       throw ArgumentError('Invalid data size', 'bytes');
@@ -304,6 +306,8 @@ class KE1 {
         ...credentialRequest.asBytesList(),
         ...authInit.asBytesList(),
       ];
+
+  Bytes serialize() => concatBytes(asBytesList());
 
   static int size(Constants constants) {
     return CredentialRequest.size(constants) + AuthInit.size(constants);
