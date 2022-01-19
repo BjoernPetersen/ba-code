@@ -264,4 +264,13 @@ class AuthFinish {
   final Bytes clientMac;
 
   AuthFinish({required this.clientMac});
+
+  List<Bytes> asBytesList() => [clientMac];
+
+  factory AuthFinish.fromBytes(Constants constants, Bytes bytes) {
+    if (bytes.length != constants.Nm) {
+      throw ArgumentError('Invalid data size', 'bytes');
+    }
+    return AuthFinish(clientMac: bytes);
+  }
 }

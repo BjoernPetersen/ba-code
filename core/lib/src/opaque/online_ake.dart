@@ -16,12 +16,7 @@ class ClientFinishResult {
 }
 
 abstract class ClientOnlineAke {
-  Future<KE1> init({
-    required Bytes password,
-    Bytes? testBlind,
-    Bytes? testNonce,
-    Bytes? testKeyshare,
-  });
+  Future<KE1> init({required Bytes password});
 
   Future<ClientFinishResult> finish({
     required Bytes clientIdentity,
