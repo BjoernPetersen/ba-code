@@ -1,5 +1,6 @@
 import 'package:opaque/client.dart';
 import 'package:opaque/server.dart';
+import 'package:opaque/src/opaque/offline_registration.dart';
 import 'package:test/test.dart';
 
 import '../util.dart';
@@ -53,11 +54,11 @@ void main() {
 
   group('finalize', () {
     for (final vector in vectors) {
-      // TODO: these broke, worked before
       group(vector.name, () {
         final opaque = Opaque(vector.suite);
 
-        final registration = opaque.offlineRegistration;
+        final registration =
+            opaque.offlineRegistration as OfflineRegistrationImpl;
         late final FinalizeRequestResult result;
 
         setUpAll(() async {
@@ -68,11 +69,10 @@ void main() {
               opaque.suite.constants,
               vector.output.registrationResponse.hexDecode(),
             ),
-            // TODO: include public key?
-            serverIdentity: vector.input.serverIdentity?.hexDecode() ??
-                vector.input.serverPublicKey.hexDecode(),
+            serverIdentity: vector.input.serverIdentity?.hexDecode(),
             clientIdentity: vector.input.clientIdentity?.hexDecode() ??
                 vector.intermediate.clientPublicKey.hexDecode(),
+            testEnvelopeNonce: vector.input.envelopeNonce.hexDecode(),
           );
         });
 

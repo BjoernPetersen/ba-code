@@ -95,6 +95,7 @@ class OfflineRegistrationImpl implements OfflineRegistration {
     required RegistrationResponse response,
     required Bytes? serverIdentity,
     required Bytes clientIdentity,
+    Bytes? testEnvelopeNonce,
   }) async {
     final y = await suite.oprf.finalize(
       input: password,
@@ -113,6 +114,7 @@ class OfflineRegistrationImpl implements OfflineRegistration {
       serverPublicKey: response.serverPublicKey,
       clientIdentity: clientIdentity,
       serverIdentity: serverIdentity,
+      testEnvelopeNonce: testEnvelopeNonce,
     );
     final record = RegistrationRecord(
       clientPublicKey: storeResult.clientPublicKey,

@@ -44,6 +44,7 @@ abstract class KeyRecovery {
     required Bytes serverPublicKey,
     required Bytes? serverIdentity,
     required Bytes? clientIdentity,
+    required Bytes? testEnvelopeNonce,
   });
 
   /// Clients recover their Envelope during login with the Recover function.
@@ -67,10 +68,12 @@ class KeyRecoveryImpl implements KeyRecovery {
   Future<StoreResult> store({
     required Bytes randomizedPassword,
     required Bytes serverPublicKey,
-    Bytes? serverIdentity,
-    Bytes? clientIdentity,
+    required Bytes? serverIdentity,
+    required Bytes? clientIdentity,
+    required Bytes? testEnvelopeNonce,
   }) async {
-    final envelopeNonce = await opaque.randomSeed(suite.constants.Nn);
+    final envelopeNonce =
+        testEnvelopeNonce ?? await opaque.randomSeed(suite.constants.Nn);
 
     final maskingKey = await suite.kdf.expand(
       key: randomizedPassword,
