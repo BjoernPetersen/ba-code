@@ -116,7 +116,13 @@ class Server {
   }
 
   static Future<void> launch() async {
-    await io.serve(Server._(), InternetAddress.anyIPv4, 8080);
+    try {
+      print('Launching server...');
+      await io.serve(Server._(), InternetAddress.anyIPv4, 8080);
+    } catch (e) {
+      print('Encountered exception: $e');
+      exit(1);
+    }
   }
 }
 
