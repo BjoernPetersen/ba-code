@@ -1,7 +1,5 @@
-import 'package:opaque/client.dart';
 import 'package:opaque/server.dart';
 import 'package:opaque/src/opaque/online_ake.dart';
-import 'package:opaque/src/opaque/three_dh.dart';
 import 'package:test/test.dart';
 
 import '../util.dart';

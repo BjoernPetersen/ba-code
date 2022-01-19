@@ -1,7 +1,5 @@
+import 'package:opaque/src/model/model.dart';
 import 'package:opaque/src/opaque/opaque.dart';
-import 'package:opaque/src/opaque/three_dh.dart';
-
-import '../util.dart';
 
 class MemoryClientState implements ClientState {
   Bytes? _blind;

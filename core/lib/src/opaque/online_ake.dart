@@ -88,6 +88,19 @@ class ClientOnlineAkeImpl implements ClientOnlineAke {
 }
 
 abstract class ServerOnlineAke {
+  /// Input:
+  /// - [serverIdentity], the optional encoded server identity, which is set to
+  ///   [serverPublicKey] if nil.
+  /// - [serverPrivateKey], the server's private key.
+  /// - [serverPublicKey], the server's public key.
+  /// - [record], the client's RegistrationRecord structure.
+  /// - [credentialIdentifier], an identifier that uniquely represents the credential.
+  /// - [oprfSeed], the server-side seed of Nh bytes used to generate an oprf_key.
+  /// - [ke1], a KE1 message structure.
+  /// - [clientIdentity], the encoded client identity.
+  ///
+  /// Output:
+  /// - ke2, a KE2 structure.
   Future<KE2> init({
     required Bytes? serverIdentity,
     required Bytes serverPrivateKey,

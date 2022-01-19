@@ -1,6 +1,5 @@
 import 'package:opaque/src/oprf/oprf.dart';
 import 'package:opaque/src/oprf/oprf_impl.dart';
-import 'package:opaque/src/oprf/prime_order_group.dart';
 import 'package:test/test.dart';
 
 import '../util.dart';

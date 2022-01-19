@@ -4,3 +4,6 @@
 # Dart
 .dart_tool/
 .packages
+
+# Dart build_runner
+*.g.dart

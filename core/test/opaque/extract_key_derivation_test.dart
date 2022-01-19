@@ -1,4 +1,4 @@
-import 'package:opaque/src/opaque/three_dh.dart';
+import 'package:opaque/src/model/model.dart';
 import 'package:test/test.dart';
 
 import '../util.dart';

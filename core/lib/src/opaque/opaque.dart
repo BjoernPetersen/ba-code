@@ -19,6 +19,8 @@ export 'package:opaque/src/opaque/online_ake.dart'
 export 'package:opaque/src/opaque/state.dart';
 export 'package:opaque/src/oprf/oprf.dart' show KeyPair;
 
+const usernameHeader = 'X-OPAQUE-USER';
+
 class Opaque {
   final Suite suite;
 
