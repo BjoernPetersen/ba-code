@@ -115,6 +115,11 @@ class Server {
     });
   }
 
+  @Route.get('/health')
+  FutureOr<Response> getHealth(Request request) {
+    return Response.ok('OK');
+  }
+
   static Future<void> launch() async {
     try {
       print('Launching server...');
