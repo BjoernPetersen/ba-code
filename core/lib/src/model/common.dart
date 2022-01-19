@@ -103,6 +103,10 @@ class RegistrationRequest {
 
     return RegistrationRequest(data: bytes);
   }
+
+  List<Bytes> asBytesList() => [data];
+
+  Bytes serialize() => concatBytes(asBytesList());
 }
 
 class RegistrationResponse {

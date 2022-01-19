@@ -40,4 +40,12 @@ class RegistrationRecord {
       envelope: envelope,
     );
   }
+
+  List<Bytes> asBytesList() => [
+        clientPublicKey,
+        maskingKey,
+        ...envelope.asBytesList(),
+      ];
+
+  Bytes serialize() => concatBytes(asBytesList());
 }
