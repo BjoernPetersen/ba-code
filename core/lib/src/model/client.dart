@@ -1,4 +1,7 @@
+import 'package:opaque/src/data_conversion.dart';
 import 'package:opaque/src/model/common.dart';
+import 'package:opaque/src/util.dart';
+
 export 'package:opaque/src/model/common.dart';
 
 class CleartextCredentials {
@@ -33,9 +36,13 @@ class CleartextCredentials {
     );
   }
 
-  List<Bytes> asBytesList() => [
-        serverPublicKey,
-        serverIdentity,
-        clientIdentity,
-      ];
+  Bytes serialize() {
+    return concatBytes([
+      serverPublicKey,
+      smallIntToBytes(serverIdentity.length, length: 2),
+      serverIdentity,
+      smallIntToBytes(clientIdentity.length, length: 2),
+      clientIdentity,
+    ]);
+  }
 }

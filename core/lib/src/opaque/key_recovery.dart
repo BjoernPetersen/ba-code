@@ -107,7 +107,7 @@ class KeyRecoveryImpl implements KeyRecovery {
       key: authKey,
       msg: concatBytes([
         envelopeNonce,
-        ...cleartextCreds.asBytesList(),
+        cleartextCreds.serialize(),
       ]),
     );
     final envelope = Envelope(
@@ -166,7 +166,7 @@ class KeyRecoveryImpl implements KeyRecovery {
       key: authKey,
       msg: concatBytes([
         envelope.nonce,
-        ...cleartextCreds.asBytesList(),
+        cleartextCreds.serialize(),
       ]),
     );
 
