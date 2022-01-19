@@ -54,26 +54,37 @@ void main() {
   group('finalize', () {
     for (final vector in vectors) {
       // TODO: these broke, worked before
-      test(vector.name, () async {
+      group(vector.name, () {
         final opaque = Opaque(vector.suite);
 
         final registration = opaque.offlineRegistration;
-        final result = await registration.finalizeRequest(
-          password: vector.input.password.hexDecode(),
-          blind: vector.input.blindRegistration.hexDecode(),
-          response: RegistrationResponse.fromBytes(
-            opaque.suite.constants,
-            vector.output.registrationResponse.hexDecode(),
-          ),
-          // TODO: include public key?
-          serverIdentity: vector.input.serverIdentity?.hexDecode(),
-          clientIdentity: vector.input.clientIdentity?.hexDecode() ??
-              vector.intermediate.clientPublicKey.hexDecode(),
-        );
+        late final FinalizeRequestResult result;
 
-        expect(result.exportKey.hexEncode(), vector.output.exportKey);
-        expect(result.record.envelope.toBytes().hexEncode(),
-            vector.intermediate.envelope);
+        setUpAll(() async {
+          result = await registration.finalizeRequest(
+            password: vector.input.password.hexDecode(),
+            blind: vector.input.blindRegistration.hexDecode(),
+            response: RegistrationResponse.fromBytes(
+              opaque.suite.constants,
+              vector.output.registrationResponse.hexDecode(),
+            ),
+            // TODO: include public key?
+            serverIdentity: vector.input.serverIdentity?.hexDecode() ??
+                vector.input.serverPublicKey.hexDecode(),
+            clientIdentity: vector.input.clientIdentity?.hexDecode() ??
+                vector.intermediate.clientPublicKey.hexDecode(),
+          );
+        });
+
+        test('exportKey', () {
+          expect(result.exportKey.hexEncode(), vector.output.exportKey);
+        });
+        test('envelope', () {
+          expect(
+            result.record.envelope.toBytes().hexEncode(),
+            vector.intermediate.envelope,
+          );
+        });
       });
     }
   });
