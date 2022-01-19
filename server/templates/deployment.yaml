@@ -13,6 +13,15 @@ spec:
       labels:
         app: opaque
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: bjoernpetersen.net/location
+                    operator: In
+                    values:
+                      - europe
       imagePullSecrets:
         - name: github
       containers:
