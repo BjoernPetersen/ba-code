@@ -49,29 +49,7 @@ void main() {
         late final KE2 ke2;
 
         setUpAll(() async {
-          ke2 = await serverAke.init(
-            serverIdentity: vector.input.serverIdentity?.hexDecode(),
-            serverPrivateKey: vector.input.serverPrivateKey.hexDecode(),
-            serverPublicKey: vector.input.serverPublicKey.hexDecode(),
-            record: RegistrationRecord.fromBytes(
-              opaque.suite.constants,
-              vector.output.registrationUpload.hexDecode(),
-            ),
-            credentialIdentifier: vector.input.credentialIdentifier.hexDecode(),
-            oprfSeed: vector.input.oprfSeed.hexDecode(),
-            ke1: KE1.fromBytes(
-              opaque.suite.constants,
-              vector.output.ke1.hexDecode(),
-            ),
-            clientIdentity: vector.input.clientIdentity?.hexDecode() ??
-                vector.intermediate.clientPublicKey.hexDecode(),
-            testNonce: vector.input.serverNonce.hexDecode(),
-            testMaskingNonce: vector.input.maskingNonce.hexDecode(),
-            testKeyPair: KeyPair(
-              private: vector.input.serverPrivateKeyshare.hexDecode(),
-              public: vector.input.serverKeyshare.hexDecode(),
-            ),
-          );
+          ke2 = await _serverInit(serverAke, vector);
         });
 
         final expectedKe2 = KE2.fromBytes(
@@ -178,4 +156,66 @@ void main() {
       });
     }
   });
+
+  group('ServerFinish', () {
+    for (final vector in vectors) {
+      group(vector.name, () {
+        final opaque = Opaque(vector.suite);
+
+        final serverState = MemoryServerState();
+
+        final serverAke = opaque.getServerAke(
+          serverState,
+          dhContext: vector.context.hexDecode(),
+        ) as ServerOnlineAkeImpl;
+
+        late final Bytes result;
+
+        setUpAll(() async {
+          // Do init to populate state
+          await _serverInit(serverAke, vector);
+
+          result = await serverAke.serverFinish(
+            ke3: KE3.fromBytes(
+              opaque.suite.constants,
+              vector.output.ke3.hexDecode(),
+            ),
+          );
+        });
+
+        test('sessionKey is returned', () {
+          expect(
+            result.hexEncode(),
+            vector.output.sessionKey,
+          );
+        });
+      });
+    }
+  });
+}
+
+Future<KE2> _serverInit(ServerOnlineAkeImpl serverAke, Vector vector) {
+  return serverAke.init(
+    serverIdentity: vector.input.serverIdentity?.hexDecode(),
+    serverPrivateKey: vector.input.serverPrivateKey.hexDecode(),
+    serverPublicKey: vector.input.serverPublicKey.hexDecode(),
+    record: RegistrationRecord.fromBytes(
+      vector.suite.constants,
+      vector.output.registrationUpload.hexDecode(),
+    ),
+    credentialIdentifier: vector.input.credentialIdentifier.hexDecode(),
+    oprfSeed: vector.input.oprfSeed.hexDecode(),
+    ke1: KE1.fromBytes(
+      vector.suite.constants,
+      vector.output.ke1.hexDecode(),
+    ),
+    clientIdentity: vector.input.clientIdentity?.hexDecode() ??
+        vector.intermediate.clientPublicKey.hexDecode(),
+    testNonce: vector.input.serverNonce.hexDecode(),
+    testMaskingNonce: vector.input.maskingNonce.hexDecode(),
+    testKeyPair: KeyPair(
+      private: vector.input.serverPrivateKeyshare.hexDecode(),
+      public: vector.input.serverKeyshare.hexDecode(),
+    ),
+  );
 }

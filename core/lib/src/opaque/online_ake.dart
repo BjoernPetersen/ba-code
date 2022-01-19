@@ -100,7 +100,6 @@ abstract class ServerOnlineAke {
   });
 
   Future<Bytes> serverFinish({
-    required ServerState state,
     required KE3 ke3,
   });
 }
@@ -155,9 +154,8 @@ class ServerOnlineAkeImpl implements ServerOnlineAke {
 
   @override
   Future<Bytes> serverFinish({
-    required ServerState state,
     required KE3 ke3,
   }) {
-    return _threeDh.serverFinish(state: state, ke3: ke3);
+    return _threeDh.serverFinish(state: _state, ke3: ke3);
   }
 }
