@@ -153,10 +153,8 @@ class ThreeDiffieHellman {
       ),
     );
 
-    // TODO: Populate state with ClientState(client_secret, ke1)
     state.clientSecret = clientNonce;
     state.ke1 = ke1;
-    // TODO: return ke1, clientSecret
     return ke1;
   }
 

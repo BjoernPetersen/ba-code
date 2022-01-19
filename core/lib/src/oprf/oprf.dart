@@ -38,7 +38,6 @@ abstract class Oprf {
   Future<Bytes> evaluate({
     required Bytes privateKey,
     required Bytes blindedElement,
-    // TODO "currently set to nil" in OPAQUE
     required PublicInput info,
   });
 
@@ -46,7 +45,6 @@ abstract class Oprf {
     required Bytes input,
     required Bytes blind,
     required Bytes evaluatedElement,
-    // TODO "currently set to nil" in OPAQUE
     required PublicInput info,
   });
 

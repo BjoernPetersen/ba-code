@@ -96,7 +96,6 @@ class OprfImpl extends Oprf {
   Future<Bytes> evaluate({
     required Bytes privateKey,
     required Bytes blindedElement,
-    // TODO "currently set to nil" in OPAQUE
     required PublicInput info,
   }) async {
     final context = concatBytes([
@@ -131,7 +130,6 @@ class OprfImpl extends Oprf {
     required Bytes input,
     required Bytes blind,
     required Bytes evaluatedElement,
-    // TODO "currently set to nil" in OPAQUE
     required PublicInput info,
   }) async {
     final unblindedElement = await unblind(

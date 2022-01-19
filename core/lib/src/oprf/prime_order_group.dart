@@ -171,7 +171,6 @@ class PrimeOrderGroupImpl implements PrimeOrderGroup<ECPoint, ECFieldElement> {
     final ECFieldElement x;
     final ECFieldElement y;
     final gx1 = x1.modPow(3, _curve) + (A * x1) + B;
-    // TODO: check isSquare instead?
     final gx1sqrt = gx1.positive.sqrt();
     if (gx1sqrt != null) {
       x = x1;

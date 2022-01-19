@@ -33,7 +33,7 @@ void testVectors(
   String skSm,
   List<Vector> vectors,
 ) {
-  final secretKey = decodeKey(oprf.group, skSm);
+  final secretKey = skSm.hexDecode();
   group('deriveKey', () {
     test('test vector key', () async {
       final keyPair = await oprf.deriveKeyPair(
@@ -121,13 +121,6 @@ void testVectors(
       }
     });
   });
-}
-
-Bytes decodeKey(PrimeOrderGroup primeGroup, String key) {
-  final bytes = key.hexDecode();
-  return bytes;
-  // TODO: should be deserialized here?
-  //return primeGroup.deserializeScalar(bytes);
 }
 
 BigInt parseHexInt(String s) {
