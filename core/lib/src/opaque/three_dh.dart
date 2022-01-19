@@ -321,10 +321,12 @@ class ThreeDiffieHellman {
   }
 
   Bytes _customLabel(int length, String label, Bytes context) {
+    final joinedLabels = 'OPAQUE-$label'.asciiBytes();
     return concatBytes([
       smallIntToBytes(length, length: 2),
-      'OPAQUE-'.asciiBytes(),
-      label.asciiBytes(),
+      smallIntToBytes(joinedLabels.length, length: 1),
+      joinedLabels,
+      smallIntToBytes(context.length, length: 1),
       context,
     ]);
   }
