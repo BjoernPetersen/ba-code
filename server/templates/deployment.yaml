@@ -5,6 +5,7 @@ metadata:
   labels:
     app: opaque
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: opaque
