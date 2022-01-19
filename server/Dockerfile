@@ -11,6 +11,8 @@ WORKDIR /app/server
 
 RUN dart pub get
 
+RUN dart run build_runner build
+
 RUN dart compile exe bin/main.dart -o bin/main
 
 FROM scratch
