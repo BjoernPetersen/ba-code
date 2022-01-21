@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:opaque/client.dart';
 import 'package:opaque/server.dart';
 import 'package:opaque/src/util.dart';
@@ -21,12 +23,17 @@ void _test(Suite suite) {
   final clientIdentity = 'user'.asciiBytes();
   final serverIdentity = 'server'.asciiBytes();
 
-  late final KeyPair serverKeyPair;
-  late final Bytes oprfSeed;
-  late final RegistrationRecord record;
+  final loadKeyPair = Completer<KeyPair>();
+  final Future<KeyPair> serverKeyPair = loadKeyPair.future;
+  final loadOprfSeed = Completer<Bytes>();
+  final Future<Bytes> oprfSeed = loadOprfSeed.future;
+  final loadRecord = Completer<RegistrationRecord>();
+  final Future<RegistrationRecord> record = loadRecord.future;
   setUpAll(() async {
-    serverKeyPair = await opaque.generateAuthKeyPair();
-    oprfSeed = await opaque.generateOprfSeed();
+    final serverKeyPair = await opaque.generateAuthKeyPair();
+    loadKeyPair.complete(serverKeyPair);
+    final oprfSeed = await opaque.generateOprfSeed();
+    loadOprfSeed.complete(oprfSeed);
 
     final reg = opaque.offlineRegistration;
     final requestResult = await reg.createRegistrationRequest(
@@ -45,52 +52,76 @@ void _test(Suite suite) {
       serverIdentity: serverIdentity,
       clientIdentity: clientIdentity,
     );
-    record = finalized.record;
+    final record = finalized.record;
+    loadRecord.complete(record);
   });
 
   group('login', () {
-    final clientState = MemoryClientState();
-    final serverState = MemoryServerState();
+    _testLogin(
+      opaque: opaque,
+      password: password,
+      clientIdentity: clientIdentity,
+      serverIdentity: serverIdentity,
+      oprfSeedFuture: oprfSeed,
+      serverKeyPairFuture: serverKeyPair,
+      recordFuture: record,
+    );
+  });
+}
 
-    final clientAke = opaque.getClientAke(clientState);
-    final serverAke = opaque.getServerAke(serverState);
+void _testLogin({
+  required Opaque opaque,
+  required Bytes password,
+  required Bytes clientIdentity,
+  required Bytes serverIdentity,
+  required Future<Bytes> oprfSeedFuture,
+  required Future<KeyPair> serverKeyPairFuture,
+  required Future<RegistrationRecord> recordFuture,
+}) {
+  final clientState = MemoryClientState();
+  final serverState = MemoryServerState();
 
-    late final KE2 ke2;
-    setUpAll(() async {
-      final ke1 = await clientAke.init(password: password);
-      ke2 = await serverAke.init(
-        serverIdentity: serverIdentity,
-        serverPrivateKey: serverKeyPair.private,
-        serverPublicKey: serverKeyPair.public,
-        record: record,
-        credentialIdentifier: clientIdentity,
-        oprfSeed: oprfSeed,
-        ke1: ke1,
-        clientIdentity: clientIdentity,
-      );
-    });
+  final clientAke = opaque.getClientAke(clientState);
+  final serverAke = opaque.getServerAke(serverState);
 
-    test('Client finishes', () async {
-      expect(
-        clientAke.finish(
-          clientIdentity: clientIdentity,
-          serverIdentity: serverIdentity,
-          ke2: ke2,
-        ),
-        completes,
-      );
-    });
+  late final KE2 ke2;
+  setUpAll(() async {
+    final ke1 = await clientAke.init(password: password);
+    final serverKeyPair = await serverKeyPairFuture;
+    final record = await recordFuture;
+    final oprfSeed = await oprfSeedFuture;
+    ke2 = await serverAke.init(
+      serverIdentity: serverIdentity,
+      serverPrivateKey: serverKeyPair.private,
+      serverPublicKey: serverKeyPair.public,
+      record: record,
+      credentialIdentifier: clientIdentity,
+      oprfSeed: oprfSeed,
+      ke1: ke1,
+      clientIdentity: clientIdentity,
+    );
+  });
 
-    test('Server finishes', () async {
-      final result = await clientAke.finish(
+  test('Client finishes', () async {
+    expect(
+      clientAke.finish(
         clientIdentity: clientIdentity,
         serverIdentity: serverIdentity,
         ke2: ke2,
-      );
-      final finish = serverAke.serverFinish(ke3: result.ke3);
-      await expectLater(finish, completes);
-      final finished = await finish;
-      expect(finished, result.sessionKey);
-    });
+      ),
+      completes,
+    );
+  });
+
+  test('Server finishes', () async {
+    final result = await clientAke.finish(
+      clientIdentity: clientIdentity,
+      serverIdentity: serverIdentity,
+      ke2: ke2,
+    );
+    final finish = serverAke.serverFinish(ke3: result.ke3);
+    await expectLater(finish, completes);
+    final finished = await finish;
+    expect(finished, result.sessionKey);
   });
 }
