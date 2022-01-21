@@ -113,7 +113,9 @@ class ThreeDiffieHellman {
       msg: await suite.hash(preamble),
     );
     if (!constantTimeBytesEquality.equals(
-        ke2.authResponse.serverMac, expectedServerMac)) {
+      ke2.authResponse.serverMac,
+      expectedServerMac,
+    )) {
       throw HandshakeException();
     }
     final clientMac = await suite.kdf.mac(
