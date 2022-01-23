@@ -69,7 +69,6 @@ class _LoggedInContentState extends State<LoggedInContent> {
                 icon: const Icon(Icons.refresh),
                 label: const Text('Retry'),
               ),
-              // TODO: allow retry
             ],
           );
         }

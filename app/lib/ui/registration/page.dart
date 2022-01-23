@@ -108,9 +108,13 @@ class _UsernameFormState extends State<_UsernameForm> {
   Widget build(BuildContext context) {
     return Center(
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: _usernameController,
+            decoration: const InputDecoration(
+              label: Text('Username'),
+            ),
           ),
           ValueListenableBuilder<TextEditingValue>(
             valueListenable: _usernameController,

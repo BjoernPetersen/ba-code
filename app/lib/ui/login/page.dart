@@ -123,23 +123,34 @@ class _LoginFormState extends State<_LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        TextField(controller: _usernameController),
-        TextField(
-          controller: _passwordController,
-          obscureText: true,
-          keyboardType: TextInputType.visiblePassword,
-        ),
-        ElevatedButton(
-          onPressed: _hasValues ? _login : null,
-          child: const Text('Log in'),
-        ),
-        TextButton(
-          onPressed: _register,
-          child: const Text('Not registered yet?'),
-        ),
-      ],
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _usernameController,
+            decoration: const InputDecoration(
+              label: Text('Username'),
+            ),
+          ),
+          TextField(
+            controller: _passwordController,
+            obscureText: true,
+            keyboardType: TextInputType.visiblePassword,
+            decoration: const InputDecoration(
+              label: Text('Password'),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: _hasValues ? _login : null,
+            child: const Text('Log in'),
+          ),
+          TextButton(
+            onPressed: _register,
+            child: const Text('Not registered yet?'),
+          ),
+        ],
+      ),
     );
   }
 }
