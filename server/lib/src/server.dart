@@ -117,7 +117,9 @@ class Server {
   @Route.get('/')
   Future<Response> getRoot(Request request) async {
     return await authenticated(request, (data) {
-      return Response.ok('Congratulations, you are authenticated!');
+      return Response.ok(
+        'Congratulations, if you can read this message, you are successfully authenticated with the OPAQUE protocol!',
+      );
     });
   }
 
