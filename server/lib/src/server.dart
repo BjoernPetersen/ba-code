@@ -100,7 +100,13 @@ class Server {
       return Response(HttpStatus.unauthorized);
     }
 
-    final decryptedData = await session.decrypt(await request.read().toBytes());
+    final encryptedData = await request.read().toBytes();
+    final List<int> decryptedData;
+    if (encryptedData.isEmpty) {
+      decryptedData = List.empty();
+    } else {
+      decryptedData = await session.decrypt(encryptedData);
+    }
     final handlerResponse = await handler(decryptedData);
     final encryptedBody = await session.encrypt(
       await handlerResponse.read().toBytes(),
