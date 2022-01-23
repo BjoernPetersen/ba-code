@@ -3,22 +3,40 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:opaque/client.dart';
+import 'package:opaque_app/secure_client.dart';
 import 'package:opaque_app/state.dart';
 
 class OpaqueHandler {
   static const _encoder = AsciiEncoder();
 
   final Opaque _opaque;
+  String? _username;
+  String? _serverDomain;
   Bytes? _sessionKey;
 
   OpaqueHandler() : _opaque = Opaque(Suite.sha256p256());
 
   bool get isLoggedIn => _sessionKey != null;
 
+  SecureClient get secureClient {
+    final sessionKey = _sessionKey;
+    if (sessionKey == null) {
+      throw StateError('Not logged in');
+    }
+
+    return SecureClient(
+      sessionKey: sessionKey,
+      serverDomain: _serverDomain!,
+      clientIdentity: _username!,
+    );
+  }
+
   Future<bool> register({
     required String username,
     required String password,
   }) async {
+    // TODO: don't hardcode this
+    const serverDomain = 'opaque.bjoernpetersen.net';
     final passwordBytes = _encoder.convert(password);
     final registration = _opaque.offlineRegistration;
     final initResult = await registration.createRegistrationRequest(
@@ -45,7 +63,7 @@ class OpaqueHandler {
       password: passwordBytes,
       blind: initResult.blind,
       response: response,
-      serverIdentity: _encoder.convert('opaque.bjoernpetersen.net'),
+      serverIdentity: _encoder.convert(serverDomain),
       clientIdentity: _encoder.convert(username),
     );
     try {
@@ -59,6 +77,9 @@ class OpaqueHandler {
       }
       return false;
     }
+
+    _username = username;
+    _serverDomain = serverDomain;
 
     return true;
   }
@@ -105,6 +126,8 @@ class OpaqueHandler {
       }
       return false;
     }
+
+    _sessionKey = finishResult.sessionKey;
 
     return true;
   }

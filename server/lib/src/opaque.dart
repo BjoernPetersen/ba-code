@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:opaque/server.dart';
 import 'package:opaque_server/src/model.dart';
-import 'package:opaque_server/src/session.dart';
 import 'package:opaque_server/src/state.dart';
 
 class OpaqueManager {

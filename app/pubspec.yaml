@@ -20,6 +20,8 @@ environment:
   flutter: ^2.7.0
 
 dependencies:
+  cryptography:
+
   flutter:
     sdk: flutter
 
