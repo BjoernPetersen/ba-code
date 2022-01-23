@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:opaque/client.dart';
 import 'package:opaque/server.dart';
-import 'package:opaque/src/util.dart';
 import 'package:test/test.dart';
 
+import '../util.dart';
 import 'state_impl.dart';
+import 'test_vectors.dart';
 
 void main() {
   group('full process p256', () {
@@ -13,6 +13,30 @@ void main() {
   });
   group('full process p384', () {
     _test(Suite.sha384p384());
+  });
+
+  group('login using vector data', () {
+    for (final vector in vectors) {
+      group(vector.name, () {
+        _testLogin(
+          opaque: Opaque(vector.suite),
+          password: vector.input.password.hexDecode(),
+          clientIdentity: vector.input.clientIdentity?.hexDecode() ??
+              vector.intermediate.clientPublicKey.hexDecode(),
+          serverIdentity: vector.input.serverIdentity?.hexDecode() ??
+              vector.input.serverPublicKey.hexDecode(),
+          oprfSeedFuture: vector.input.oprfSeed.hexDecode(),
+          serverKeyPairFuture: KeyPair(
+            private: vector.input.serverPrivateKey.hexDecode(),
+            public: vector.input.serverPublicKey.hexDecode(),
+          ),
+          recordFuture: RegistrationRecord.fromBytes(
+            vector.suite.constants,
+            vector.output.registrationUpload.hexDecode(),
+          ),
+        );
+      });
+    }
   });
 }
 
@@ -74,9 +98,9 @@ void _testLogin({
   required Bytes password,
   required Bytes clientIdentity,
   required Bytes serverIdentity,
-  required Future<Bytes> oprfSeedFuture,
-  required Future<KeyPair> serverKeyPairFuture,
-  required Future<RegistrationRecord> recordFuture,
+  required FutureOr<Bytes> oprfSeedFuture,
+  required FutureOr<KeyPair> serverKeyPairFuture,
+  required FutureOr<RegistrationRecord> recordFuture,
 }) {
   final clientState = MemoryClientState();
   final serverState = MemoryServerState();
