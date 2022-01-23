@@ -11,9 +11,13 @@ void main() {
   group('full process p256', () {
     _test(Suite.sha256p256());
   });
-  group('full process p384', () {
-    _test(Suite.sha384p384());
-  });
+  group(
+    'full process p384',
+    () {
+      _test(Suite.sha384p384());
+    },
+    skip: true,
+  );
 
   group('login using vector data', () {
     for (final vector in vectors) {
