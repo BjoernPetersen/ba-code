@@ -59,21 +59,21 @@ class ThreeDiffieHellman {
   Future<KE1> clientStart({
     required ClientState state,
     required CredentialRequest request,
-    Bytes? testClientNonce,
-    Bytes? testClientKeyshare,
+    required Bytes? testClientNonce,
+    required KeyPair? testClientKeypair,
   }) async {
     final clientNonce =
         testClientNonce ?? await opaque.randomSeed(suite.constants.Nn);
-    final keyPair = await opaque.generateAuthKeyPair();
+    final keyPair = testClientKeypair ?? await opaque.generateAuthKeyPair();
     final ke1 = KE1(
       credentialRequest: request,
       authInit: AuthInit(
         clientNonce: clientNonce,
-        clientKeyshare: testClientKeyshare ?? keyPair.public,
+        clientKeyshare: keyPair.public,
       ),
     );
 
-    state.clientSecret = clientNonce;
+    state.clientSecret = keyPair.private;
     state.ke1 = ke1;
     return ke1;
   }

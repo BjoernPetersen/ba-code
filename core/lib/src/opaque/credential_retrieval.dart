@@ -102,8 +102,10 @@ class CredentialRetrieval {
 
     final credentialResponsePad = await suite.kdf.expand(
       key: maskingKey,
-      info: concatBytes(
-          [response.maskingNonce, 'CredentialResponsePad'.asciiBytes()]),
+      info: concatBytes([
+        response.maskingNonce,
+        'CredentialResponsePad'.asciiBytes(),
+      ]),
       l: suite.constants.Npk + Envelope.size(suite.constants),
     );
     final xored = credentialResponsePad ^ response.maskedResponse;

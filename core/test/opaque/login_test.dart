@@ -23,6 +23,7 @@ void main() {
           testBlind: vector.input.blindLogin.hexDecode(),
           testNonce: vector.input.clientNonce.hexDecode(),
           testKeyshare: vector.input.clientKeyshare.hexDecode(),
+          testPrivateKey: vector.input.clientPrivateKeyshare.hexDecode(),
         );
 
         expect(

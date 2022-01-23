@@ -43,6 +43,7 @@ class ClientOnlineAkeImpl implements ClientOnlineAke {
     required Bytes password,
     Bytes? testBlind,
     Bytes? testNonce,
+    Bytes? testPrivateKey,
     Bytes? testKeyshare,
   }) async {
     final result = await _credentialRetrieval.createCredentialRequest(
@@ -51,11 +52,20 @@ class ClientOnlineAkeImpl implements ClientOnlineAke {
     );
     _state.blind = result.blind;
     _state.password = password;
+    final KeyPair? testKeyPair;
+    if (testPrivateKey != null && testKeyshare != null) {
+      testKeyPair = KeyPair(
+        private: testPrivateKey,
+        public: testKeyshare,
+      );
+    } else {
+      testKeyPair = null;
+    }
     return await _threeDh.clientStart(
       state: _state,
       request: result.request,
       testClientNonce: testNonce,
-      testClientKeyshare: testKeyshare,
+      testClientKeypair: testKeyPair,
     );
   }
 

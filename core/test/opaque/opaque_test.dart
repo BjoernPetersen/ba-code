@@ -21,6 +21,7 @@ void main() {
         _testLogin(
           opaque: Opaque(vector.suite),
           password: vector.input.password.hexDecode(),
+          credentialIdentifier: vector.input.credentialIdentifier.hexDecode(),
           clientIdentity: vector.input.clientIdentity?.hexDecode() ??
               vector.intermediate.clientPublicKey.hexDecode(),
           serverIdentity: vector.input.serverIdentity?.hexDecode() ??
@@ -34,6 +35,7 @@ void main() {
             vector.suite.constants,
             vector.output.registrationUpload.hexDecode(),
           ),
+          context: vector.context.hexDecode(),
         );
       });
     }
@@ -84,11 +86,13 @@ void _test(Suite suite) {
     _testLogin(
       opaque: opaque,
       password: password,
+      credentialIdentifier: clientIdentity,
       clientIdentity: clientIdentity,
       serverIdentity: serverIdentity,
       oprfSeedFuture: oprfSeed,
       serverKeyPairFuture: serverKeyPair,
       recordFuture: record,
+      context: null,
     );
   });
 }
@@ -96,21 +100,31 @@ void _test(Suite suite) {
 void _testLogin({
   required Opaque opaque,
   required Bytes password,
+  required Bytes credentialIdentifier,
   required Bytes clientIdentity,
   required Bytes serverIdentity,
   required FutureOr<Bytes> oprfSeedFuture,
   required FutureOr<KeyPair> serverKeyPairFuture,
   required FutureOr<RegistrationRecord> recordFuture,
+  required Bytes? context,
 }) {
   final clientState = MemoryClientState();
   final serverState = MemoryServerState();
 
-  final clientAke = opaque.getClientAke(clientState);
-  final serverAke = opaque.getServerAke(serverState);
+  final clientAke = opaque.getClientAke(
+    clientState,
+    dhContext: context,
+  );
+  final serverAke = opaque.getServerAke(
+    serverState,
+    dhContext: context,
+  );
 
   late final KE2 ke2;
   setUpAll(() async {
-    final ke1 = await clientAke.init(password: password);
+    final ke1 = await clientAke.init(
+      password: password,
+    );
     final serverKeyPair = await serverKeyPairFuture;
     final record = await recordFuture;
     final oprfSeed = await oprfSeedFuture;
@@ -119,7 +133,7 @@ void _testLogin({
       serverPrivateKey: serverKeyPair.private,
       serverPublicKey: serverKeyPair.public,
       record: record,
-      credentialIdentifier: clientIdentity,
+      credentialIdentifier: credentialIdentifier,
       oprfSeed: oprfSeed,
       ke1: ke1,
       clientIdentity: clientIdentity,
