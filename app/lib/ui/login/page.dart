@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:opaque_app/opaque.dart';
+import 'package:opaque_app/ui/loggedin/page.dart';
 import 'package:opaque_app/ui/login/bloc.dart';
 import 'package:opaque_app/ui/registration/page.dart';
 import 'package:provider/provider.dart';
@@ -44,7 +45,6 @@ class _LoginProcess extends StatelessWidget {
       listener: (context, state) {
         final scaffold = ScaffoldMessenger.of(context);
         if (state.stage == LoginStage.success) {
-          // TODO: navigate
           scaffold.showSnackBar(SnackBar(
             content: const Text('Successfully logged in'),
             duration: const Duration(seconds: 1),
@@ -52,6 +52,9 @@ class _LoginProcess extends StatelessWidget {
               label: 'Dismiss',
               onPressed: () => scaffold.hideCurrentSnackBar(),
             ),
+          ));
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (context) => const LoggedInPage(),
           ));
         }
 

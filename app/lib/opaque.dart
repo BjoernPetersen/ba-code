@@ -11,12 +11,22 @@ class OpaqueHandler {
 
   final Opaque _opaque;
   String? _username;
-  String? _serverDomain;
+
+  // TODO: don't hardcode this?
+  final String serverDomain = 'opaque.bjoernpetersen.net';
   Bytes? _sessionKey;
 
   OpaqueHandler() : _opaque = Opaque(Suite.sha256p256());
 
   bool get isLoggedIn => _sessionKey != null;
+
+  String get username {
+    final username = _username;
+    if (username == null) {
+      throw StateError('Not logged in');
+    }
+    return username;
+  }
 
   SecureClient get secureClient {
     final sessionKey = _sessionKey;
@@ -26,7 +36,7 @@ class OpaqueHandler {
 
     return SecureClient(
       sessionKey: sessionKey,
-      serverDomain: _serverDomain!,
+      serverDomain: serverDomain,
       clientIdentity: _username!,
     );
   }
@@ -35,14 +45,12 @@ class OpaqueHandler {
     required String username,
     required String password,
   }) async {
-    // TODO: don't hardcode this
-    const serverDomain = 'opaque.bjoernpetersen.net';
     final passwordBytes = _encoder.convert(password);
     final registration = _opaque.offlineRegistration;
     final initResult = await registration.createRegistrationRequest(
       password: passwordBytes,
     );
-    final remoteClient = _RemoteClient();
+    final remoteClient = _RemoteClient(domain: serverDomain);
     final Bytes responseBytes;
     try {
       responseBytes = await remoteClient.post(
@@ -78,9 +86,6 @@ class OpaqueHandler {
       return false;
     }
 
-    _username = username;
-    _serverDomain = serverDomain;
-
     return true;
   }
 
@@ -93,7 +98,7 @@ class OpaqueHandler {
     final ke1 = await ake.init(
       password: _encoder.convert(password),
     );
-    final remoteClient = _RemoteClient();
+    final remoteClient = _RemoteClient(domain: serverDomain);
 
     final Bytes responseBytes;
     try {
@@ -111,7 +116,7 @@ class OpaqueHandler {
     final ke2 = KE2.fromBytes(_opaque.suite.constants, responseBytes);
     final finishResult = await ake.finish(
       clientIdentity: _encoder.convert(username),
-      serverIdentity: _encoder.convert('opaque.bjoernpetersen.net'),
+      serverIdentity: _encoder.convert(serverDomain),
       ke2: ke2,
     );
 
@@ -128,6 +133,7 @@ class OpaqueHandler {
     }
 
     _sessionKey = finishResult.sessionKey;
+    _username = username;
 
     return true;
   }
@@ -149,7 +155,9 @@ class _HttpException implements Exception {
 }
 
 class _RemoteClient {
-  static Uri baseUrl = Uri.https('opaque.bjoernpetersen.net', '');
+  final Uri baseUrl;
+
+  _RemoteClient({required String domain}) : baseUrl = Uri.https(domain, '');
 
   Future<Bytes> post({
     required String path,
