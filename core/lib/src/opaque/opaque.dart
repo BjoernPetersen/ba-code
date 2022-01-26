@@ -12,6 +12,7 @@ import 'package:opaque/src/oprf/oprf.dart';
 import 'package:opaque/src/util.dart';
 
 export 'package:opaque/src/opaque/key_recovery.dart' hide KeyRecoveryImpl;
+export 'package:opaque/src/opaque/mhf.dart';
 export 'package:opaque/src/opaque/offline_registration.dart'
     hide OfflineRegistrationImpl;
 export 'package:opaque/src/opaque/online_ake.dart'
@@ -88,11 +89,13 @@ class Suite {
     required this.constants,
   }) : hash = _simpleHash(hash);
 
-  factory Suite.sha256p256() {
+  factory Suite.sha256p256({
+    required MemoryHardFunction mhf,
+  }) {
     return Suite(
       oprf: Oprf.p256(),
       hash: crypto.Sha256(),
-      mhf: MemoryHardFunction.identity(),
+      mhf: mhf,
       kdf: KeyDerivationFunction.hkdfSha256(),
       constants: const Constants(
         Nh: 32,
@@ -106,11 +109,13 @@ class Suite {
     );
   }
 
-  factory Suite.sha384p384() {
+  factory Suite.sha384p384({
+    required MemoryHardFunction mhf,
+  }) {
     return Suite(
       oprf: Oprf.p384(),
       hash: crypto.Sha384(),
-      mhf: MemoryHardFunction.identity(),
+      mhf: mhf,
       kdf: KeyDerivationFunction.hkdfSha384(),
       constants: const Constants(
         Nh: 48,

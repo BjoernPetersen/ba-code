@@ -13,7 +13,9 @@ class OpaqueManager {
   late final Future<KeyPair> _keyPair;
 
   OpaqueManager()
-      : _opaque = Opaque(Suite.sha256p256()),
+      : _opaque = Opaque(Suite.sha256p256(
+          mhf: MemoryHardFunction.scrypt(),
+        )),
         _statesByUsername = {},
         _storage = {} {
     _keyPair = _opaque.generateAuthKeyPair();

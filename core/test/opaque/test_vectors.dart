@@ -105,7 +105,7 @@ class Vector {
 final vectors = [
   Vector(
     name: 'OPAQUE-3DH Real Test Vector 3',
-    suite: Suite.sha256p256(),
+    suite: Suite.sha256p256(mhf: MemoryHardFunction.identity()),
     context: '4f50415155452d504f43',
     input: VectorInput(
       oprfSeed:
@@ -175,7 +175,7 @@ final vectors = [
   ),
   Vector(
     name: 'OPAQUE-3DH Real Test Vector 4',
-    suite: Suite.sha256p256(),
+    suite: Suite.sha256p256(mhf: MemoryHardFunction.identity()),
     context: '4f50415155452d504f43',
     input: VectorInput(
       clientIdentity: '616c696365',

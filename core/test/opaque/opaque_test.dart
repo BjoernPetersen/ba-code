@@ -9,12 +9,12 @@ import 'test_vectors.dart';
 
 void main() {
   group('full process p256', () {
-    _test(Suite.sha256p256());
+    _test(Suite.sha256p256(mhf: MemoryHardFunction.identity()));
   });
   group(
     'full process p384',
     () {
-      _test(Suite.sha384p384());
+      _test(Suite.sha384p384(mhf: MemoryHardFunction.identity()));
     },
     skip: true,
   );

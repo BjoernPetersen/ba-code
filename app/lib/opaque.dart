@@ -16,7 +16,10 @@ class OpaqueHandler {
   final String serverDomain = 'opaque.bjoernpetersen.net';
   Bytes? _sessionKey;
 
-  OpaqueHandler() : _opaque = Opaque(Suite.sha256p256());
+  OpaqueHandler()
+      : _opaque = Opaque(Suite.sha256p256(
+          mhf: MemoryHardFunction.scrypt(),
+        ));
 
   bool get isLoggedIn => _sessionKey != null;
 
