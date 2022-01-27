@@ -15,8 +15,11 @@ class LoggedInPage extends StatelessWidget {
       appBar: AppBar(
         title: Text('Logged in as ${opaque.username}'),
       ),
-      body: Center(
-        child: LoggedInContent(client: opaque.secureClient),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: Center(
+          child: LoggedInContent(client: opaque.secureClient),
+        ),
       ),
     );
   }

@@ -36,7 +36,10 @@ class _LoginProcess extends StatelessWidget {
         switch (state.stage) {
           case LoginStage.initial:
           case LoginStage.failed:
-            return const _LoginForm();
+            return const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: _LoginForm(),
+            );
           case LoginStage.success:
           case LoginStage.loading:
             return const Center(child: CircularProgressIndicator());

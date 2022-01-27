@@ -23,7 +23,10 @@ class RegistrationPage extends StatelessWidget {
           Provider.of<OpaqueHandler>(context, listen: false),
           initialUsername: initialUsername,
         ),
-        child: const _RegistrationProcess(),
+        child: const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10),
+          child: _RegistrationProcess(),
+        ),
       ),
     );
   }
