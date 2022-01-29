@@ -25,7 +25,7 @@ class RegistrationPage extends StatelessWidget {
         ),
         child: const Padding(
           padding: EdgeInsets.symmetric(horizontal: 10),
-          child: _RegistrationProcess(),
+          child: Center(child: _RegistrationProcess()),
         ),
       ),
     );
@@ -72,7 +72,7 @@ class _RegistrationProcess extends StatelessWidget {
           case RegistrationStage.registering:
           case RegistrationStage.checking:
           case RegistrationStage.done:
-            return const Center(child: CircularProgressIndicator());
+            return const CircularProgressIndicator();
           case RegistrationStage.available:
             return _PasswordForm(username: state.username!);
         }
@@ -109,26 +109,24 @@ class _UsernameFormState extends State<_UsernameForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _usernameController,
-            decoration: const InputDecoration(
-              label: Text('Username'),
-            ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextField(
+          controller: _usernameController,
+          decoration: const InputDecoration(
+            label: Text('Username'),
           ),
-          ValueListenableBuilder<TextEditingValue>(
-            valueListenable: _usernameController,
-            builder: (context, value, child) => ElevatedButton(
-              onPressed: value.text.trim().isEmpty ? null : _check,
-              child: child,
-            ),
-            child: const Text('Check availability'),
+        ),
+        ValueListenableBuilder<TextEditingValue>(
+          valueListenable: _usernameController,
+          builder: (context, value, child) => ElevatedButton(
+            onPressed: value.text.trim().isEmpty ? null : _check,
+            child: child,
           ),
-        ],
-      ),
+          child: const Text('Check availability'),
+        ),
+      ],
     );
   }
 }
@@ -167,6 +165,7 @@ class _PasswordFormState extends State<_PasswordForm> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           widget.username,
