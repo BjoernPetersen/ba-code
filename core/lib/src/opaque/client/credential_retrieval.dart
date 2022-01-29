@@ -40,7 +40,10 @@ class CredentialRetrieval {
       blind: blind,
     );
     final request = CredentialRequest(data: blindPair.blindedElement);
-    return CredentialRequestResult(blind: blindPair.blind, request: request);
+    return CredentialRequestResult(
+      blind: blindPair.blind,
+      request: request,
+    );
   }
 
   Future<RecoverCredentialsResult> recoverCredentials({

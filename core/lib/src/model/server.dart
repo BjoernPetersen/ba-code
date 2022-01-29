@@ -8,7 +8,8 @@ class RegistrationRecord {
   /// key client_private_key.
   final Bytes clientPublicKey;
 
-  /// A key used by the server to preserve confidentiality of the envelope during login.
+  /// A key used by the server to preserve confidentiality of the envelope
+  /// during login.
   final Bytes maskingKey;
 
   /// The client's Envelope structure.
