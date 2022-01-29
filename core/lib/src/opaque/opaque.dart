@@ -119,7 +119,6 @@ class Suite {
       kdf: KeyDerivationFunction.hkdfSha384(),
       constants: const Constants(
         Nh: 48,
-        // TODO: these two I'm not sure about
         Npk: 49,
         Nsk: 48,
         Nm: 48,
