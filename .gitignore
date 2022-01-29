@@ -7,3 +7,6 @@
 
 # Dart build_runner
 *.g.dart
+
+# macOS
+.DS_Store
