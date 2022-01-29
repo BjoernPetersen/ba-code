@@ -1,5 +1,5 @@
 import 'package:opaque/src/model/model.dart';
-import 'package:opaque/src/opaque/opaque.dart';
+import 'package:opaque/src/opaque/opaque_client.dart';
 import 'package:opaque/src/util.dart';
 
 class CreateRegistrationRequestResult {
@@ -26,13 +26,6 @@ abstract class OfflineRegistration {
   Future<CreateRegistrationRequestResult> createRegistrationRequest({
     required Bytes password,
     Bytes? blind,
-  });
-
-  Future<RegistrationResponse> createRegistrationResponse({
-    required RegistrationRequest request,
-    required Bytes serverPublicKey,
-    required Bytes credentialIdentifier,
-    required Bytes oprfSeed,
   });
 
   Future<FinalizeRequestResult> finalizeRequest({
@@ -65,27 +58,6 @@ class OfflineRegistrationImpl implements OfflineRegistration {
       request: request,
       blind: blindPair.blind,
     );
-  }
-
-  @override
-  Future<RegistrationResponse> createRegistrationResponse({
-    required RegistrationRequest request,
-    required Bytes serverPublicKey,
-    required Bytes credentialIdentifier,
-    required Bytes oprfSeed,
-  }) async {
-    final seed = await suite.kdf.expand(
-      key: oprfSeed,
-      info: concatBytes([credentialIdentifier, 'OprfKey'.asciiBytes()]),
-      l: suite.constants.Nseed,
-    );
-    final oprfKey = (await opaque.deriveKeyPair(seed)).private;
-    final z = await suite.oprf.evaluate(
-      privateKey: oprfKey,
-      blindedElement: request.data,
-      info: Bytes(0),
-    );
-    return RegistrationResponse(data: z, serverPublicKey: serverPublicKey);
   }
 
   @override

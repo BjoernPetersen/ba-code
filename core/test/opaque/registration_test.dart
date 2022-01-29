@@ -1,6 +1,6 @@
-import 'package:opaque/client.dart';
-import 'package:opaque/server.dart';
-import 'package:opaque/src/opaque/offline_registration.dart';
+import 'package:opaque/client.dart' as client;
+import 'package:opaque/server.dart' as server;
+import 'package:opaque/src/opaque/client/offline_registration.dart';
 import 'package:test/test.dart';
 
 import '../util.dart';
@@ -10,7 +10,7 @@ void main() {
   group('request', () {
     for (final vector in vectors) {
       test(vector.name, () async {
-        final opaque = Opaque(vector.suite);
+        final opaque = client.Opaque(vector.suite);
 
         final registration = opaque.offlineRegistration;
         final result = await registration.createRegistrationRequest(
@@ -28,11 +28,11 @@ void main() {
   group('response', () {
     for (final vector in vectors) {
       test(vector.name, () async {
-        final opaque = Opaque(vector.suite);
+        final opaque = server.Opaque(vector.suite);
 
         final registration = opaque.offlineRegistration;
         final response = await registration.createRegistrationResponse(
-          request: RegistrationRequest(
+          request: server.RegistrationRequest(
             data: vector.output.registrationRequest.hexDecode(),
           ),
           serverPublicKey: vector.input.serverPublicKey.hexDecode(),
@@ -55,7 +55,7 @@ void main() {
   group('finalize', () {
     for (final vector in vectors) {
       group(vector.name, () {
-        final opaque = Opaque(vector.suite);
+        final opaque = client.Opaque(vector.suite);
 
         final registration =
             opaque.offlineRegistration as OfflineRegistrationImpl;
@@ -65,7 +65,7 @@ void main() {
           result = await registration.finalizeRequest(
             password: vector.input.password.hexDecode(),
             blind: vector.input.blindRegistration.hexDecode(),
-            response: RegistrationResponse.fromBytes(
+            response: client.RegistrationResponse.fromBytes(
               opaque.suite.constants,
               vector.output.registrationResponse.hexDecode(),
             ),

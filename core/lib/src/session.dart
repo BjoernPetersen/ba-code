@@ -1,6 +1,8 @@
 import 'package:cryptography/cryptography.dart';
 import 'package:opaque/src/model/client.dart';
 
+const usernameHeader = 'X-OPAQUE-USER';
+
 class SessionSecurity {
   final AesGcm _aes;
   late final Future<SecretKey> _key;

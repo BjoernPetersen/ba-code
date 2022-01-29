@@ -1,6 +1,9 @@
 import 'dart:async';
 
-import 'package:opaque/server.dart';
+import 'package:opaque/client.dart' as client;
+import 'package:opaque/server.dart' as server;
+import 'package:opaque/src/model/model.dart';
+import 'package:opaque/src/opaque/opaque_base.dart';
 import 'package:test/test.dart';
 
 import '../util.dart';
@@ -23,7 +26,7 @@ void main() {
     for (final vector in vectors) {
       group(vector.name, () {
         _testLogin(
-          opaque: Opaque(vector.suite),
+          suite: vector.suite,
           password: vector.input.password.hexDecode(),
           credentialIdentifier: vector.input.credentialIdentifier.hexDecode(),
           clientIdentity: vector.input.clientIdentity?.hexDecode() ??
@@ -47,7 +50,8 @@ void main() {
 }
 
 void _test(Suite suite) {
-  final opaque = Opaque(suite);
+  final clientOpaque = client.Opaque(suite);
+  final serverOpaque = server.Opaque(suite);
 
   final password = 'password'.asciiBytes();
   final clientIdentity = 'user'.asciiBytes();
@@ -60,22 +64,23 @@ void _test(Suite suite) {
   final loadRecord = Completer<RegistrationRecord>();
   final Future<RegistrationRecord> record = loadRecord.future;
   setUpAll(() async {
-    final serverKeyPair = await opaque.generateAuthKeyPair();
+    final serverKeyPair = await serverOpaque.generateAuthKeyPair();
     loadKeyPair.complete(serverKeyPair);
-    final oprfSeed = await opaque.generateOprfSeed();
+    final oprfSeed = await serverOpaque.generateOprfSeed();
     loadOprfSeed.complete(oprfSeed);
 
-    final reg = opaque.offlineRegistration;
-    final requestResult = await reg.createRegistrationRequest(
+    final serverReg = serverOpaque.offlineRegistration;
+    final clientReg = clientOpaque.offlineRegistration;
+    final requestResult = await clientReg.createRegistrationRequest(
       password: password,
     );
-    final response = await reg.createRegistrationResponse(
+    final response = await serverReg.createRegistrationResponse(
       request: requestResult.request,
       serverPublicKey: serverKeyPair.public,
       credentialIdentifier: clientIdentity,
       oprfSeed: oprfSeed,
     );
-    final finalized = await reg.finalizeRequest(
+    final finalized = await clientReg.finalizeRequest(
       password: password,
       blind: requestResult.blind,
       response: response,
@@ -88,7 +93,7 @@ void _test(Suite suite) {
 
   group('login', () {
     _testLogin(
-      opaque: opaque,
+      suite: suite,
       password: password,
       credentialIdentifier: clientIdentity,
       clientIdentity: clientIdentity,
@@ -102,7 +107,7 @@ void _test(Suite suite) {
 }
 
 void _testLogin({
-  required Opaque opaque,
+  required Suite suite,
   required Bytes password,
   required Bytes credentialIdentifier,
   required Bytes clientIdentity,
@@ -115,11 +120,11 @@ void _testLogin({
   final clientState = MemoryClientState();
   final serverState = MemoryServerState();
 
-  final clientAke = opaque.getClientAke(
+  final clientAke = client.Opaque(suite).getOnlineAke(
     clientState,
     dhContext: context,
   );
-  final serverAke = opaque.getServerAke(
+  final serverAke = server.Opaque(suite).getOnlineAke(
     serverState,
     dhContext: context,
   );

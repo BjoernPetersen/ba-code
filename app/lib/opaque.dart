@@ -97,7 +97,7 @@ class OpaqueHandler {
     required String password,
   }) async {
     final state = MemoryClientState();
-    final ake = _opaque.getClientAke(state);
+    final ake = _opaque.getOnlineAke(state);
     final ke1 = await ake.init(
       password: _encoder.convert(password),
     );

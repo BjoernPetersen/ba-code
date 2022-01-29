@@ -1,4 +1,4 @@
-import 'package:opaque/src/opaque/opaque.dart';
+import 'package:opaque/src/opaque/suite.dart';
 
 class VectorInput {
   final String? clientIdentity;

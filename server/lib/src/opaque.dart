@@ -102,7 +102,7 @@ class OpaqueManager {
 
     final state = MemoryServerState();
     _statesByUsername[username] = state;
-    final ake = _opaque.getServerAke(state);
+    final ake = _opaque.getOnlineAke(state);
 
     final keyPair = await _keyPair;
     final clientIdentity = _encoder.convert(username);
@@ -133,7 +133,7 @@ class OpaqueManager {
       // TODO: these exceptions theoretically allow client enumeration attacks
       throw StateError('No state for user $username');
     }
-    final ake = _opaque.getServerAke(state);
+    final ake = _opaque.getOnlineAke(state);
 
     final sessionKey = await ake.serverFinish(ke3: ke3);
     return SessionSecurity(sessionKey);

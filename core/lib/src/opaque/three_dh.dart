@@ -1,7 +1,8 @@
 import 'package:cryptography/helpers.dart';
 import 'package:opaque/src/data_conversion.dart';
 import 'package:opaque/src/model/model.dart';
-import 'package:opaque/src/opaque/opaque.dart';
+import 'package:opaque/src/opaque/opaque_base.dart';
+import 'package:opaque/src/opaque/state.dart';
 import 'package:opaque/src/util.dart';
 
 class ClientFinalizeResult {
@@ -27,7 +28,7 @@ class DeriveKeysResult {
 }
 
 class ThreeDiffieHellman {
-  final Opaque opaque;
+  final OpaqueBase opaque;
   final Bytes context;
 
   Suite get suite => opaque.suite;

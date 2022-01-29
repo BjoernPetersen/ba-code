@@ -1,6 +1,6 @@
 import 'package:cryptography/helpers.dart';
 import 'package:opaque/src/model/model.dart';
-import 'package:opaque/src/opaque/opaque.dart';
+import 'package:opaque/src/opaque/opaque_base.dart';
 import 'package:opaque/src/util.dart';
 
 class StoreResult {
@@ -58,7 +58,7 @@ abstract class KeyRecovery {
 }
 
 class KeyRecoveryImpl implements KeyRecovery {
-  final Opaque opaque;
+  final OpaqueBase opaque;
 
   Suite get suite => opaque.suite;
 
