@@ -183,6 +183,11 @@ class OpaqueHandler {
     _sessionKey = result;
     return true;
   }
+
+  void logout() {
+    _username = null;
+    _sessionKey = null;
+  }
 }
 
 class _HttpException implements Exception {

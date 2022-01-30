@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:opaque_app/opaque.dart';
 import 'package:opaque_app/secure_client.dart';
+import 'package:opaque_app/ui/login/page.dart';
 import 'package:provider/provider.dart';
 
 class LoggedInPage extends StatelessWidget {
@@ -14,6 +15,9 @@ class LoggedInPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Logged in as ${opaque.username}'),
+        actions: const [
+          _LogoutAction(),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -80,6 +84,29 @@ class _LoggedInContentState extends State<LoggedInContent> {
         }
         return const CircularProgressIndicator();
       },
+    );
+  }
+}
+
+class _LogoutAction extends StatelessWidget {
+  const _LogoutAction();
+
+  void _logout(BuildContext context) {
+    Provider.of<OpaqueHandler>(
+      context,
+      listen: false,
+    ).logout();
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+      builder: (context) => const LoginPage(),
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: () => _logout(context),
+      icon: const Icon(Icons.logout),
+      tooltip: 'Logout',
     );
   }
 }
