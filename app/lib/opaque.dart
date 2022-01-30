@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -6,20 +7,135 @@ import 'package:opaque/client.dart';
 import 'package:opaque_app/secure_client.dart';
 import 'package:opaque_app/state.dart';
 
-class OpaqueHandler {
-  static const _encoder = AsciiEncoder();
+Opaque get _opaque => Opaque(
+      Suite.sha256p256(
+        mhf: MemoryHardFunction.scrypt(),
+      ),
+    );
 
-  final Opaque _opaque;
+const _encoder = AsciiEncoder();
+
+// TODO: don't hardcode this?
+const serverDomain = 'opaque.bjoernpetersen.net';
+
+Future<void> _asyncRegister(List args) async {
+  final SendPort port = args[0];
+  final String username = args[1];
+  final String password = args[2];
+
+  final result = await _doRegister(username: username, password: password);
+  Isolate.exit(port, result);
+}
+
+Future<bool> _doRegister({
+  required String username,
+  required String password,
+}) async {
+  final passwordBytes = _encoder.convert(password);
+  final registration = _opaque.offlineRegistration;
+  final initResult = await registration.createRegistrationRequest(
+    password: passwordBytes,
+  );
+  final remoteClient = _RemoteClient(domain: serverDomain);
+  final Bytes responseBytes;
+  try {
+    responseBytes = await remoteClient.post(
+      path: '/opaque/$username/registration/init',
+      body: initResult.request.serialize(),
+    );
+  } on _HttpException catch (e) {
+    if (kDebugMode) {
+      print('Encountered HTTP error $e');
+    }
+    return false;
+  }
+  final response = RegistrationResponse.fromBytes(
+    _opaque.suite.constants,
+    responseBytes,
+  );
+  final finalizeResult = await registration.finalizeRequest(
+    password: passwordBytes,
+    blind: initResult.blind,
+    response: response,
+    serverIdentity: _encoder.convert(serverDomain),
+    clientIdentity: _encoder.convert(username),
+  );
+  try {
+    await remoteClient.post(
+      path: '/opaque/$username/registration/finalize',
+      body: finalizeResult.record.serialize(),
+    );
+  } on _HttpException catch (e) {
+    if (kDebugMode) {
+      print('Encountered HTTP error $e');
+    }
+    return false;
+  }
+
+  return true;
+}
+
+Future<void> _asyncLogin(List args) async {
+  final SendPort port = args[0];
+  final String username = args[1];
+  final String password = args[2];
+
+  final result = await _doLogin(username: username, password: password);
+  Isolate.exit(port, result);
+}
+
+Future<Bytes?> _doLogin({
+  required String username,
+  required String password,
+}) async {
+  final state = MemoryClientState();
+  final ake = _opaque.getOnlineAke(state);
+  final ke1 = await ake.init(
+    password: _encoder.convert(password),
+  );
+  final remoteClient = _RemoteClient(domain: serverDomain);
+
+  final Bytes responseBytes;
+  try {
+    responseBytes = await remoteClient.post(
+      path: '/opaque/$username/login/init',
+      body: ke1.serialize(),
+    );
+  } on _HttpException catch (e) {
+    if (kDebugMode) {
+      print('Encountered HTTP error $e');
+    }
+    return null;
+  }
+
+  final ke2 = KE2.fromBytes(_opaque.suite.constants, responseBytes);
+  final finishResult = await ake.finish(
+    clientIdentity: _encoder.convert(username),
+    serverIdentity: _encoder.convert(serverDomain),
+    ke2: ke2,
+  );
+
+  try {
+    await remoteClient.post(
+      path: '/opaque/$username/login/finish',
+      body: finishResult.ke3.serialize(),
+    );
+  } on _HttpException catch (e) {
+    if (kDebugMode) {
+      print('Encountered HTTP error $e');
+    }
+    return null;
+  }
+
+  return finishResult.sessionKey;
+}
+
+class OpaqueHandler {
   String? _username;
 
-  // TODO: don't hardcode this?
-  final String serverDomain = 'opaque.bjoernpetersen.net';
   Bytes? _sessionKey;
 
-  OpaqueHandler()
-      : _opaque = Opaque(Suite.sha256p256(
-          mhf: MemoryHardFunction.scrypt(),
-        ));
+  OpaqueHandler();
 
   bool get isLoggedIn => _sessionKey != null;
 
@@ -48,96 +164,23 @@ class OpaqueHandler {
     required String username,
     required String password,
   }) async {
-    final passwordBytes = _encoder.convert(password);
-    final registration = _opaque.offlineRegistration;
-    final initResult = await registration.createRegistrationRequest(
-      password: passwordBytes,
-    );
-    final remoteClient = _RemoteClient(domain: serverDomain);
-    final Bytes responseBytes;
-    try {
-      responseBytes = await remoteClient.post(
-        path: '/opaque/$username/registration/init',
-        body: initResult.request.serialize(),
-      );
-    } on _HttpException catch (e) {
-      if (kDebugMode) {
-        print('Encountered HTTP error $e');
-      }
-      return false;
-    }
-    final response = RegistrationResponse.fromBytes(
-      _opaque.suite.constants,
-      responseBytes,
-    );
-    final finalizeResult = await registration.finalizeRequest(
-      password: passwordBytes,
-      blind: initResult.blind,
-      response: response,
-      serverIdentity: _encoder.convert(serverDomain),
-      clientIdentity: _encoder.convert(username),
-    );
-    try {
-      await remoteClient.post(
-        path: '/opaque/$username/registration/finalize',
-        body: finalizeResult.record.serialize(),
-      );
-    } on _HttpException catch (e) {
-      if (kDebugMode) {
-        print('Encountered HTTP error $e');
-      }
-      return false;
-    }
-
-    return true;
+    final port = ReceivePort();
+    await Isolate.spawn(_asyncRegister, [port.sendPort, username, password]);
+    return await port.first;
   }
 
   Future<bool> login({
     required String username,
     required String password,
   }) async {
-    final state = MemoryClientState();
-    final ake = _opaque.getOnlineAke(state);
-    final ke1 = await ake.init(
-      password: _encoder.convert(password),
-    );
-    final remoteClient = _RemoteClient(domain: serverDomain);
-
-    final Bytes responseBytes;
-    try {
-      responseBytes = await remoteClient.post(
-        path: '/opaque/$username/login/init',
-        body: ke1.serialize(),
-      );
-    } on _HttpException catch (e) {
-      if (kDebugMode) {
-        print('Encountered HTTP error $e');
-      }
+    final port = ReceivePort();
+    await Isolate.spawn(_asyncLogin, [port.sendPort, username, password]);
+    final Bytes? result = await port.first;
+    if (result == null) {
       return false;
     }
-
-    final ke2 = KE2.fromBytes(_opaque.suite.constants, responseBytes);
-    final finishResult = await ake.finish(
-      clientIdentity: _encoder.convert(username),
-      serverIdentity: _encoder.convert(serverDomain),
-      ke2: ke2,
-    );
-
-    try {
-      await remoteClient.post(
-        path: '/opaque/$username/login/finish',
-        body: finishResult.ke3.serialize(),
-      );
-    } on _HttpException catch (e) {
-      if (kDebugMode) {
-        print('Encountered HTTP error $e');
-      }
-      return false;
-    }
-
-    _sessionKey = finishResult.sessionKey;
     _username = username;
-
+    _sessionKey = result;
     return true;
   }
 }

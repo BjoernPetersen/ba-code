@@ -58,7 +58,10 @@ class _LoggedInContentState extends State<LoggedInContent> {
       future: _loadContent,
       builder: (context, state) {
         if (state.hasData) {
-          return Text(state.data!);
+          return Text(
+            state.data!,
+            textAlign: TextAlign.center,
+          );
         }
         if (state.hasError) {
           return Column(
