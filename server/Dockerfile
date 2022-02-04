@@ -1,6 +1,6 @@
 # NOTE: the build context should be the repository root!
 
-FROM dart:2.15 AS builder
+FROM dart:2.16 AS builder
 
 WORKDIR /app
 
