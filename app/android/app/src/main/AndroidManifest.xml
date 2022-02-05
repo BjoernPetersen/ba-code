@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.bjoernpetersen.opaque_app">
    <application
-        android:label="opaque_app"
+        android:label="OPAQUE"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
