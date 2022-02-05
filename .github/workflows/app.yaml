@@ -153,6 +153,7 @@ jobs:
           channel: 'stable'
       - name: Save Keystore Password to File
         run: echo "keyPassword=$APP_KEY_PASSWORD" > android/key.properties
+        working-directory: ./app
         env:
           APP_KEY_PASSWORD: ${{ secrets.APP_KEY_PASSWORD }}
       - name: Build the Android App APK
