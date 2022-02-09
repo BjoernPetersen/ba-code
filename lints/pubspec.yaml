@@ -1,0 +1,10 @@
+name: opaque_lints
+version: 1.0.0
+
+publish_to: none
+
+environment:
+  sdk: ^2.14.0
+
+dependencies:
+  lints: ^1.0.0

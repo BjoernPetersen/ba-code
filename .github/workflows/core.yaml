@@ -1,0 +1,51 @@
+name: Core
+on: [push]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    container: dart:2.15
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v2
+      - name: Get Dependencies
+        run: pub get
+        working-directory: ./core
+      - name: Run Code Generation
+        run: pub run build_runner build
+        working-directory: ./core
+      - name: Run Tests
+        run: dart test
+        working-directory: ./core
+
+  check_format:
+    name: Check Format
+    runs-on: ubuntu-latest
+    container: dart:2.15
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v2
+      - name: Check "lib" Formatting
+        run: dart format lib --set-exit-if-changed
+        working-directory: ./core
+      - name: Check "test" Formatting
+        run: dart format test --set-exit-if-changed
+        working-directory: ./core
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    container: dart:2.15
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v2
+      - name: Get Dependencies
+        run: pub get
+        working-directory: ./core
+      - name: Run Code Generation
+        run: pub run build_runner build
+        working-directory: ./core
+      - name: Run Analysis
+        run: dart analyze
+        working-directory: ./core

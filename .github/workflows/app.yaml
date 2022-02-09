@@ -1,0 +1,166 @@
+name: App
+on: [push]
+
+jobs:
+  generate:
+    name: Code Generation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v2
+      - name: Initialize Cache
+        uses: actions/cache@v2
+        with:
+          key: ${{ hashFiles('app/pubspec.lock') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ hashFiles('app/pubspec.lock') }}-
+          path: |
+            ${{ runner.tool_cache }}/flutter/
+            app/.dart_tool/
+            app/lib/**/*.g.dart
+            app/test/**/*.g.dart
+            app/lib/**/*.config.dart
+            app/test/**/*.config.dart
+            app/lib/**/*.i18n.dart
+            app/test/**/*.i18n.dart
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - name: Get Dependencies
+        run: flutter pub get
+        working-directory: ./app
+      - name: Run Code Generation
+        run: flutter pub run build_runner build
+        working-directory: ./app
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: generate
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v2
+      - name: Restore Cache
+        uses: actions/cache@v2
+        with:
+          key: ${{ hashFiles('app/pubspec.lock') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ hashFiles('app/pubspec.lock') }}-
+          path: |
+            ${{ runner.tool_cache }}/flutter/
+            app/.dart_tool/
+            app/lib/**/*.g.dart
+            app/test/**/*.g.dart
+            app/lib/**/*.config.dart
+            app/test/**/*.config.dart
+            app/lib/**/*.i18n.dart
+            app/test/**/*.i18n.dart
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - name: Run Tests
+        run: flutter test
+        working-directory: ./app
+
+  check_format:
+    name: Check Format
+    runs-on: ubuntu-latest
+    needs: generate
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v2
+      - name: Restore Cache
+        uses: actions/cache@v2
+        with:
+          key: ${{ hashFiles('app/pubspec.lock') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ hashFiles('app/pubspec.lock') }}-
+          path: |
+            ${{ runner.tool_cache }}/flutter/
+            app/.dart_tool/
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - name: Check "lib" Formatting
+        run: flutter format lib --set-exit-if-changed
+        working-directory: ./app
+      - name: Check "test" Formatting
+        run: flutter format test --set-exit-if-changed
+        working-directory: ./app
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: generate
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v2
+      - name: Restore Cache
+        uses: actions/cache@v2
+        with:
+          key: ${{ hashFiles('app/pubspec.lock') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ hashFiles('app/pubspec.lock') }}-
+          path: |
+            ${{ runner.tool_cache }}/flutter/
+            app/.dart_tool/
+            app/lib/**/*.g.dart
+            app/test/**/*.g.dart
+            app/lib/**/*.config.dart
+            app/test/**/*.config.dart
+            app/lib/**/*.i18n.dart
+            app/test/**/*.i18n.dart
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - name: Run Analysis
+        run: flutter analyze
+        working-directory: ./app
+
+  build_apk:
+    name: Build APK
+    runs-on: ubuntu-latest
+    if: success() && github.ref == 'refs/heads/main'
+    needs:
+      - check_format
+      - lint
+      - test
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v2
+      - name: Restore Cache
+        uses: actions/cache@v2
+        with:
+          key: ${{ hashFiles('app/pubspec.lock') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ hashFiles('app/pubspec.lock') }}-
+          path: |
+            ${{ runner.tool_cache }}/flutter/
+            app/.dart_tool/
+            app/lib/**/*.g.dart
+            app/test/**/*.g.dart
+            app/lib/**/*.config.dart
+            app/test/**/*.config.dart
+            app/lib/**/*.i18n.dart
+            app/test/**/*.i18n.dart
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - name: Save Keystore Password to File
+        run: echo "keyPassword=$APP_KEY_PASSWORD" > android/key.properties
+        working-directory: ./app
+        env:
+          APP_KEY_PASSWORD: ${{ secrets.APP_KEY_PASSWORD }}
+      - name: Build the Android App APK
+        run: flutter build apk
+        working-directory: ./app
+      - name: Store APK Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: App APK
+          path: app/build/app/outputs/flutter-apk/app-release.apk

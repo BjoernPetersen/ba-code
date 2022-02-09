@@ -1,0 +1,90 @@
+name: Server
+on: [push]
+
+jobs:
+  check_format:
+    name: Check Format
+    runs-on: ubuntu-latest
+    container: dart:2.15
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v2
+      - name: Check "bin" Formatting
+        run: dart format bin --set-exit-if-changed
+        working-directory: ./server
+      - name: Check "lib" Formatting
+        run: dart format lib --set-exit-if-changed
+        working-directory: ./server
+      - name: Check "test" Formatting
+        run: dart format test --set-exit-if-changed
+        working-directory: ./server
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    container: dart:2.15
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v2
+      - name: Get Dependencies
+        run: pub get
+        working-directory: ./server
+      - name: Run Code Generation
+        run: pub run build_runner build
+        working-directory: ./server
+      - name: Run Analysis
+        run: dart analyze
+        working-directory: ./server
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    container: dart:2.15
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v2
+      - name: Get dependencies
+        run: pub get
+        working-directory: ./server
+      - name: Run Code Generation
+        run: pub run build_runner build
+        working-directory: ./server
+      - name: Run Tests
+        run: dart test
+        working-directory: ./server
+
+  push_docker:
+    name: Docker Build and Push
+    runs-on: ubuntu-latest
+    if: success() && github.ref == 'refs/heads/main'
+    needs:
+      - check_format
+      - lint
+      - test
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v2
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build the Tagged Docker Image
+        run: docker build -t ghcr.io/bjoernpetersen/opaque-server:${GITHUB_SHA} --build-arg "build=${GITHUB_SHA}" -f server/Dockerfile .
+      - name: Push the Tagged Docker Image
+        run: docker push ghcr.io/bjoernpetersen/opaque-server:${GITHUB_SHA}
+
+  deploy:
+    name: Deploy to Kubernetes Cluster
+    runs-on: ubuntu-latest
+    needs: push_docker
+    if: success() && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Substitute environment variables in values.yaml
+        run: "envsubst < server/values.yaml > values_sub.yaml && mv values_sub.yaml server/values.yaml"
+      - uses: WyriHaximus/github-action-helm3@v2
+        with:
+          exec: helm upgrade opaque server --install --namespace=opaque
+          kubeconfig: '${{ secrets.KUBECONFIG_RAW }}'
